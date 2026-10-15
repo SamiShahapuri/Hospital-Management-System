@@ -8,9 +8,9 @@ A **Patient Record and Appointment Management System** for hospitals. It manages
 
 | Name | SRN | GitHub |
 |---|---|---|
-| _Member A_ | PES1UG24CS611 | [Sami Shahapuri]|
-| _Member B_ | PES1UG24CS619 | Shahid Tahsildar] |
-| _Member C_ | PES1UG25CS839 | [Sachin B R] |
+| _Member A_ | PES1UG24CS611 | Sami Shahapuri|
+| _Member B_ | PES1UG24CS619 | Shahid Tahsildar |
+| _Member C_ | PES1UG25CS839 | Sachin B R |
 
 ## 📌 Project Status
 
