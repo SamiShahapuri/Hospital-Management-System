@@ -1,0 +1,12 @@
+import mongoose from "mongoose";
+const patientSchema = new mongoose.Schema({
+  fullName: { type: String, required: true, trim: true, maxlength: 120 },
+  dateOfBirth: { type: Date },
+  phone: { type: String, trim: true, maxlength: 30 },
+  email: { type: String, trim: true, lowercase: true },
+  address: { type: String, trim: true, maxlength: 300 },
+  medicalHistory: [{ note: { type: String, required: true, maxlength: 1000 }, recordedAt: { type: Date, default: Date.now } }],
+  prescriptions: [{ medicine: { type: String, required: true }, instructions: { type: String, default: "" }, recordedAt: { type: Date, default: Date.now } }],
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" }
+}, { timestamps: true });
+export default mongoose.model("Patient", patientSchema);
