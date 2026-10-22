@@ -16,14 +16,16 @@ export default function App() {
   const [search, setSearch] = useState("");
   const [appointmentForm, setAppointmentForm] = useState({ patient: "", doctor: "", scheduledAt: "", reason: "" });
   const [admissionForm, setAdmissionForm] = useState({ patient: "", roomNumber: "", bedNumber: "" });
-  const [doctorForm, setDoctorForm] = useState({ fullName: "", specialization: "" });
+  const [doctorForm, setDoctorForm] = useState({ fullName: "", specialization: "", department: "" });
+  const [departmentForm, setDepartmentForm] = useState({ name: "", description: "" });
+  const [departments, setDepartments] = useState([]);
 
   async function refresh() {
     try {
-      const [p, d, a, ad] = await Promise.all([
-        api("/patients"), api("/doctors"), api("/appointments"), api("/admissions")
+      const [p, d, a, ad, depts] = await Promise.all([
+        api("/patients"), api("/doctors"), api("/appointments"), api("/admissions"), api("/departments")
       ]);
-      setPatients(p); setDoctors(d); setAppointments(a); setAdmissions(ad); setNotice("");
+      setPatients(p); setDoctors(d); setAppointments(a); setAdmissions(ad); setDepartments(depts); setNotice("");
     } catch (e) { setNotice(e.message); }
   }
   useEffect(() => { if (user) refresh(); }, [user]);
@@ -46,11 +48,22 @@ export default function App() {
   async function addDoctor(e) {
     e.preventDefault();
     try {
-      await api("/doctors", { method: "POST", body: JSON.stringify(doctorForm) });
-      setDoctorForm({ fullName: "", specialization: "" });
+      await api("/doctors", { method: "POST", body: JSON.stringify({ ...doctorForm, department: doctorForm.department }) });
+      setDoctorForm({ fullName: "", specialization: "", department: "" });
       setNotice("Doctor profile created."); await refresh();
     } catch (e) { setNotice(e.message); }
   }
+
+  async function addDepartment(e) {
+    e.preventDefault();
+    try {
+      await api("/departments", { method: "POST", body: JSON.stringify(departmentForm) });
+      setDepartmentForm({ name: "", description: "" });
+      setNotice("Department created successfully.");
+      await refresh();
+    } catch (e) { setNotice(e.message); }
+  }
+
   async function bookAppointment(e) {
     e.preventDefault();
     try {
@@ -109,6 +122,7 @@ export default function App() {
           <form className="quick-form" onSubmit={addDoctor}>
             <input placeholder="Doctor full name" value={doctorForm.fullName} onChange={e => setDoctorForm({ ...doctorForm, fullName: e.target.value })} required />
             <input placeholder="Specialization" value={doctorForm.specialization} onChange={e => setDoctorForm({ ...doctorForm, specialization: e.target.value })} required />
+            <select value={doctorForm.department} onChange={e => setDoctorForm({ ...doctorForm, department: e.target.value })}><option value="">No department yet</option>{departments.map(d => <option key={d._id} value={d.name}>{d.name}</option>)}</select>
             <button>Add doctor</button>
           </form>
         </div>}
@@ -130,6 +144,16 @@ export default function App() {
             <input placeholder="Bed number" value={admissionForm.bedNumber} onChange={e => setAdmissionForm({ ...admissionForm, bedNumber: e.target.value })} required />
             <button>Admit patient</button>
           </form>
+        </div>}
+
+        {user.role === "Admin" && <div className="card quick-card">
+          <div className="section-head"><div><h2>Manage departments</h2><p className="muted">Maintain hospital departments</p></div></div>
+          <form className="quick-form" onSubmit={addDepartment}>
+            <input placeholder="Department name" value={departmentForm.name} onChange={e => setDepartmentForm({ ...departmentForm, name: e.target.value })} required />
+            <input placeholder="Description (optional)" value={departmentForm.description} onChange={e => setDepartmentForm({ ...departmentForm, description: e.target.value })} />
+            <button>Add department</button>
+          </form>
+          <div className="department-list">{departments.map(d => <span className="pill" key={d._id}>{d.name}</span>)}</div>
         </div>}
       </section>
       <section className="content-grid">
