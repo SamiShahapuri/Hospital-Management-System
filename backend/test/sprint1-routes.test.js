@@ -33,7 +33,7 @@ test("appointment endpoints validate future times and prevent duplicate booked s
   const routes = source("../src/routes/appointments.js");
   assert.match(routes, /date <= new Date\(\)/);
   assert.match(routes, /Doctor already has an appointment at this time/);
-  assert.match(routes, /appointment\.status = "Cancelled"/);
+  assert.match(routes, /status: "Cancelled"/);
   assert.match(routes, /Only booked appointments can be cancelled/);
 });
 
