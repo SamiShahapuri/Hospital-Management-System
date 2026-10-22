@@ -23,7 +23,7 @@ export default function App() {
   async function refresh() {
     try {
       const [p, d, a, ad, depts] = await Promise.all([
-        api("/patients"), api("/doctors"), api("/appointments"), api("/admissions"), api("/departments")
+        api("/patients"), api("/doctors"), api("/appointments"), Promise.resolve([]), api("/departments")
       ]);
       setPatients(p); setDoctors(d); setAppointments(a); setAdmissions(ad); setDepartments(depts); setNotice("");
     } catch (e) { setNotice(e.message); }
