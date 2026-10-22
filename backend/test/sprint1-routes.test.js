@@ -7,14 +7,14 @@ import { fileURLToPath } from "node:url";
 const here = path.dirname(fileURLToPath(import.meta.url));
 const source = (relativePath) => fs.readFileSync(path.resolve(here, relativePath), "utf8");
 
-test("server registers doctor, department and appointment routes", () => {
+test("server registers the doctor, department and appointment APIs", () => {
   const server = source("../src/server.js");
   assert.match(server, /app\.use\("\/api\/doctors", doctorRoutes\)/);
   assert.match(server, /app\.use\("\/api\/departments", departmentRoutes\)/);
   assert.match(server, /app\.use\("\/api\/appointments", appointmentRoutes\)/);
 });
 
-test("doctor endpoints enforce authentication and role permissions", () => {
+test("doctor endpoints require authentication and role checks", () => {
   const routes = source("../src/routes/doctors.js");
   assert.match(routes, /router\.use\(authenticate\)/);
   assert.match(routes, /allowRoles\("Admin", "Receptionist"\)/);
@@ -22,22 +22,22 @@ test("doctor endpoints enforce authentication and role permissions", () => {
   assert.match(routes, /Doctor\.findByIdAndUpdate/);
 });
 
-test("department endpoints validate names and handle duplicates", () => {
+test("department endpoints validate names and handle duplicate departments", () => {
   const routes = source("../src/routes/departments.js");
   assert.match(routes, /Department name is required/);
   assert.match(routes, /error\?\.code === 11000/);
   assert.match(routes, /allowRoles\("Admin"\)/);
 });
 
-test("appointment endpoints validate future times and prevent double bookings", () => {
+test("appointment endpoints validate future times and prevent duplicate booked slots", () => {
   const routes = source("../src/routes/appointments.js");
   assert.match(routes, /date <= new Date\(\)/);
   assert.match(routes, /Doctor already has an appointment at this time/);
-  assert.match(routes, /appointment\.status = "Cancelled"/);
+  assert.match(routes, /status: "Cancelled"/);
   assert.match(routes, /Only booked appointments can be cancelled/);
 });
 
-test("doctor and appointment schemas define persistent records and indexes", () => {
+test("doctor and appointment schemas include persistence and indexes", () => {
   const doctor = source("../src/models/Doctor.js");
   const appointment = source("../src/models/Appointment.js");
   assert.match(doctor, /timestamps: true/);
