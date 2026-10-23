@@ -49,12 +49,35 @@ router.post("/", allowRoles("Admin", "Receptionist", "Patient"), async (req, res
     if (typeof reason !== "string" || reason.length > 500) {
       return res.status(400).json({ message: "Reason must be text up to 500 characters" });
     }
-    const [patientExists, doctorExists] = await Promise.all([
+    
+    const [patientExists, doctorRecord] = await Promise.all([
       Patient.exists({ _id: patient }),
-      Doctor.exists({ _id: doctor, active: true })
+      Doctor.findOne({ _id: doctor, active: true })
     ]);
-    if (!patientExists) return res.status(404).json({ message: "Patient not found" });
-    if (!doctorExists) return res.status(404).json({ message: "Active doctor not found" });
+
+    if (!patientExists) {
+      return res.status(404).json({ message: "Patient not found" });
+    }
+    if (!doctorRecord) {
+      return res.status(404).json({ message: "Active doctor not found" });
+    }
+
+    // Check whether the appointment falls within the doctor's availability.
+    const dayOfWeek = date.getDay();
+    const appointmentTime = `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+
+    const available = doctorRecord.availability.some((slot) =>
+      slot.dayOfWeek === dayOfWeek &&
+      appointmentTime >= slot.startTime &&
+      appointmentTime < slot.endTime
+    );
+
+    if (!available) {
+      return res.status(400).json({
+        message: "Doctor is not available at the requested appointment time"
+      });
+    }
+
     const conflict = await Appointment.exists({
       doctor, scheduledAt: date, status: "Booked"
     });
