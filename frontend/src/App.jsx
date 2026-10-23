@@ -167,7 +167,15 @@ export default function App() {
           <input className="search" placeholder="⌕  Search patients by name..." value={search} onChange={e => setSearch(e.target.value)} />
           <div className="table-wrap"><table><thead><tr><th>Patient</th><th>Phone</th><th>Registered</th></tr></thead><tbody>
             {filteredPatients.map(p => <tr key={p._id}><td><div className="person"><span className="mini-avatar">{p.fullName[0]}</span><strong>{p.fullName}</strong></div></td><td>{p.phone || "—"}</td><td>{new Date(p.createdAt).toLocaleDateString()}</td></tr>)}
-            {!filteredPatients.length && <tr><td colSpan="3" className="empty">No patient records yet. Register a demo patient above.</td></tr>}
+            {!filteredPatients.length && (
+  <tr>
+    <td colSpan="3" className="empty">
+      {search.trim()
+        ? "No patients match your search."
+        : "No patient records yet. Register a patient to get started."}
+    </td>
+  </tr>
+)}
           </tbody></table></div>
         </div>
         <div className="right-column">
