@@ -16,14 +16,16 @@ export default function App() {
   const [search, setSearch] = useState("");
   const [appointmentForm, setAppointmentForm] = useState({ patient: "", doctor: "", scheduledAt: "", reason: "" });
   const [admissionForm, setAdmissionForm] = useState({ patient: "", roomNumber: "", bedNumber: "" });
-  const [doctorForm, setDoctorForm] = useState({ fullName: "", specialization: "" });
+  const [doctorForm, setDoctorForm] = useState({ fullName: "", specialization: "", department: "" });
+  const [departmentForm, setDepartmentForm] = useState({ name: "", description: "" });
+  const [departments, setDepartments] = useState([]);
 
   async function refresh() {
     try {
-      const [p, d, a, ad] = await Promise.all([
-        api("/patients"), api("/doctors"), api("/appointments"), api("/admissions")
+      const [p, d, a, ad, depts] = await Promise.all([
+        api("/patients"), api("/doctors"), api("/appointments"), Promise.resolve([]), api("/departments")
       ]);
-      setPatients(p); setDoctors(d); setAppointments(a); setAdmissions(ad); setNotice("");
+      setPatients(p); setDoctors(d); setAppointments(a); setAdmissions(ad); setDepartments(depts); setNotice("");
     } catch (e) { setNotice(e.message); }
   }
   useEffect(() => { if (user) refresh(); }, [user]);
@@ -46,11 +48,22 @@ export default function App() {
   async function addDoctor(e) {
     e.preventDefault();
     try {
-      await api("/doctors", { method: "POST", body: JSON.stringify(doctorForm) });
-      setDoctorForm({ fullName: "", specialization: "" });
+      await api("/doctors", { method: "POST", body: JSON.stringify({ ...doctorForm, department: doctorForm.department }) });
+      setDoctorForm({ fullName: "", specialization: "", department: "" });
       setNotice("Doctor profile created."); await refresh();
     } catch (e) { setNotice(e.message); }
   }
+
+  async function addDepartment(e) {
+    e.preventDefault();
+    try {
+      await api("/departments", { method: "POST", body: JSON.stringify(departmentForm) });
+      setDepartmentForm({ name: "", description: "" });
+      setNotice("Department created successfully.");
+      await refresh();
+    } catch (e) { setNotice(e.message); }
+  }
+
   async function bookAppointment(e) {
     e.preventDefault();
     try {
@@ -109,6 +122,7 @@ export default function App() {
           <form className="quick-form" onSubmit={addDoctor}>
             <input placeholder="Doctor full name" value={doctorForm.fullName} onChange={e => setDoctorForm({ ...doctorForm, fullName: e.target.value })} required />
             <input placeholder="Specialization" value={doctorForm.specialization} onChange={e => setDoctorForm({ ...doctorForm, specialization: e.target.value })} required />
+            <select value={doctorForm.department} onChange={e => setDoctorForm({ ...doctorForm, department: e.target.value })}><option value="">No department yet</option>{departments.map(d => <option key={d._id} value={d.name}>{d.name}</option>)}</select>
             <button>Add doctor</button>
           </form>
         </div>}
@@ -131,6 +145,16 @@ export default function App() {
             <button>Admit patient</button>
           </form>
         </div>}
+
+        {user.role === "Admin" && <div className="card quick-card">
+          <div className="section-head"><div><h2>Manage departments</h2><p className="muted">Maintain hospital departments</p></div></div>
+          <form className="quick-form" onSubmit={addDepartment}>
+            <input placeholder="Department name" value={departmentForm.name} onChange={e => setDepartmentForm({ ...departmentForm, name: e.target.value })} required />
+            <input placeholder="Description (optional)" value={departmentForm.description} onChange={e => setDepartmentForm({ ...departmentForm, description: e.target.value })} />
+            <button>Add department</button>
+          </form>
+          <div className="department-list">{departments.map(d => <span className="pill" key={d._id}>{d.name}</span>)}</div>
+        </div>}
       </section>
       <section className="content-grid">
         <div className="card patients-card"><div className="section-head"><div><h2>Patient directory</h2><p className="muted">Register and search patient records</p></div><span className="pill">{patients.length} records</span></div>
@@ -143,7 +167,15 @@ export default function App() {
           <input className="search" placeholder="⌕  Search patients by name..." value={search} onChange={e => setSearch(e.target.value)} />
           <div className="table-wrap"><table><thead><tr><th>Patient</th><th>Phone</th><th>Registered</th></tr></thead><tbody>
             {filteredPatients.map(p => <tr key={p._id}><td><div className="person"><span className="mini-avatar">{p.fullName[0]}</span><strong>{p.fullName}</strong></div></td><td>{p.phone || "—"}</td><td>{new Date(p.createdAt).toLocaleDateString()}</td></tr>)}
-            {!filteredPatients.length && <tr><td colSpan="3" className="empty">No patient records yet. Register a demo patient above.</td></tr>}
+            {!filteredPatients.length && (
+  <tr>
+    <td colSpan="3" className="empty">
+      {search.trim()
+        ? "No patients match your search."
+        : "No patient records yet. Register a patient to get started."}
+    </td>
+  </tr>
+)}
           </tbody></table></div>
         </div>
         <div className="right-column">

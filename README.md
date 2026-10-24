@@ -18,8 +18,8 @@ A **Patient Record and Appointment Management System** for hospitals. It manages
 |---|---|---|
 | Part 1 – SRS, SAD, Test Plan, Use Cases | Completed | ✅ Done |
 | Backlog creation and sprint planning | by 12 Oct 2026 | ✅ Done |
-| Sprint 1 | 19 – 23 Oct 2026 | ⏳ Upcoming |
-| Sprint 2 | 26 – 30 Oct 2026 | ⏳ Upcoming |
+| Sprint 1 | 19 – 23 Oct 2026 | 🛠️ In progress |
+| Sprint 2 | 26 – 30 Oct 2026 | 📅 Planned |
 
 > Update this table as each phase is completed.
 
@@ -82,7 +82,7 @@ We manage the backlog with **GitHub Issues** and a **GitHub Project board**.
 | Sprint 1 | 19 – 23 Oct 2026 | Login & roles, patient records, doctors & departments, appointments, GitHub Actions, security and validation |
 | Sprint 2 | 26 – 30 Oct 2026 | Admission/discharge, billing, notifications, reports, remaining NFRs, documentation |
 
-📋 **Project board:** _add link here_
+📋 **Project board:** [GitHub Projects — Hospital Management System](https://github.com/users/SamiShahapuri/projects/3)
 
 ## 🔄 Development Workflow
 
@@ -96,11 +96,34 @@ We manage the backlog with **GitHub Issues** and a **GitHub Project board**.
 
 ## 🛠️ Tech Stack
 
-_To be filled in once finalized (frontend, backend, database)._
+- **Frontend:** React + Vite
+- **Backend:** Node.js + Express
+- **Database:** MongoDB with Mongoose
+- **Authentication:** JWT and bcrypt password hashing
 
 ## ▶️ Getting Started
 
-_Setup and run instructions will be added as the code is developed in Sprint 1._
+### Prerequisites
+- Node.js 20 or newer
+- MongoDB running locally or a MongoDB URI you can access
+
+### Run the backend
+```bash
+cd backend
+cp .env.example .env
+npm install
+npm run seed
+npm run dev
+```
+
+### Run the frontend (in a second terminal)
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+The frontend defaults to the API at `http://localhost:5000/api`. Configure `VITE_API_URL` in a frontend `.env` file if your API runs elsewhere. Use demo data only; do not enter real patient information.
 
 ## 🧪 Testing
 
@@ -121,6 +144,6 @@ Test cases for each module (Login, Patient Records, Doctors, Appointments, Admis
 | [Test Plan](Documents/testPlanDocument.docx) | Test cases per module |
 | [Use Case Diagram](Documents/useCaseDiagram.jpeg) | Actors and their interactions with the system |
 | [Use Case Flow](Documents/useCaseFlowDocumentation.docx) | Step-by-step flows for each use case |
-| SAD | _add after uploading to `Documents/`_ |
+| SAD | [System Architecture Document](Documents/README.md) — verify against the originally submitted SAD before final submission |
 
 Any deviations from the submitted documents will be recorded and explained at the final demo.

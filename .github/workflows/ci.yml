@@ -21,6 +21,12 @@ jobs:
         working-directory: backend
         run: npm install
 
+      - name: Check backend JavaScript syntax
+        working-directory: backend
+        run: |
+          find src test -name "*.js" -print0 | xargs -0 -n1 node --check
+          node --check seed.js
+
       - name: Run backend tests
         working-directory: backend
         run: npm test
