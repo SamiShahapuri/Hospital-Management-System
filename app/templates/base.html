@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Hospital Management System{% endblock %}</title>
+  <style>
+    :root {
+      --ink: #1c2b33; --muted: #5d6f78; --line: #d5dfe3; --page: #f3f6f7;
+      --card: #ffffff; --brand: #0b6e6e; --brand-dark: #095858;
+      --ok-bg: #e3f4ec; --ok-ink: #145a3a; --err-bg: #fbe9e7; --err-ink: #8a2418;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--page); color: var(--ink);
+           font: 16px/1.5 "Segoe UI", system-ui, -apple-system, Roboto, sans-serif; }
+    header { background: var(--brand); color: #fff; padding: 14px 24px; font-weight: 600; }
+    main { max-width: 960px; margin: 0 auto; padding: 24px 16px 48px; }
+    h1 { font-size: 1.5rem; margin: 0 0 4px; }
+    p.lead { margin: 0 0 20px; color: var(--muted); max-width: 60ch; }
+    .msg { padding: 10px 14px; border-radius: 6px; margin-bottom: 10px; }
+    .msg.ok { background: var(--ok-bg); color: var(--ok-ink); }
+    .msg.error { background: var(--err-bg); color: var(--err-ink); }
+    form.assign { display: flex; flex-wrap: wrap; gap: 12px; align-items: end;
+                  background: var(--card); border: 1px solid var(--line);
+                  border-radius: 8px; padding: 16px; margin-bottom: 28px; }
+    label { display: flex; flex-direction: column; gap: 4px; font-size: .9rem; color: var(--muted); }
+    select { min-width: 220px; padding: 8px; border: 1px solid var(--line); border-radius: 6px;
+             font: inherit; color: var(--ink); background: #fff; }
+    button { font: inherit; cursor: pointer; border-radius: 6px; padding: 9px 16px; }
+    button.primary { background: var(--brand); color: #fff; border: 0; }
+    button.primary:hover { background: var(--brand-dark); }
+    button.link { background: none; border: 0; color: var(--err-ink); padding: 2px 6px; }
+    button.link:hover { text-decoration: underline; }
+    :focus-visible { outline: 3px solid #f2b705; outline-offset: 2px; }
+    .depts { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+    section.dept { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; }
+    section.dept h2 { font-size: 1.1rem; margin: 0 0 8px; }
+    ul { list-style: none; margin: 0; padding: 0; }
+    li { display: flex; justify-content: space-between; align-items: center;
+         padding: 6px 0; border-top: 1px solid var(--line); }
+    li small { display: block; color: var(--muted); }
+    .empty { color: var(--muted); margin: 0; }
+    form.inline { margin: 0; }
+  </style>
+</head>
+<body>
+  <header>Hospital Management System</header>
+  <main>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="msg {{ category }}" role="status">{{ message }}</div>
+      {% endfor %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Assign doctors to departments{% endblock %}
+{% block content %}
+  <h1>Assign doctors to departments</h1>
+  <p class="lead">A doctor can work in more than one department. Each doctor can be assigned to a department once.</p>
+
+  <form class="assign" method="post" action="{{ url_for('assignments.assign') }}">
+    <label>Doctor
+      <select name="doctor_id" required>
+        <option value="" disabled selected>Choose a doctor</option>
+        {% for d in doctors %}
+          <option value="{{ d.id }}">{{ d.name }} ({{ d.specialization }})</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Department
+      <select name="department_id" required>
+        <option value="" disabled selected>Choose a department</option>
+        {% for dep in departments %}
+          <option value="{{ dep.id }}">{{ dep.name }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <button class="primary" type="submit">Assign doctor</button>
+  </form>
+
+  <div class="depts">
+    {% for dep in departments %}
+      <section class="dept">
+        <h2>{{ dep.name }}</h2>
+        {% if by_department[dep.id] %}
+          <ul>
+            {% for d in by_department[dep.id] %}
+              <li>
+                <span>{{ d.name }}<small>{{ d.specialization }}</small></span>
+                <form class="inline" method="post" action="{{ url_for('assignments.remove') }}">
+                  <input type="hidden" name="doctor_id" value="{{ d.doctor_id }}">
+                  <input type="hidden" name="department_id" value="{{ dep.id }}">
+                  <button class="link" type="submit" aria-label="Remove {{ d.name }} from {{ dep.name }}">Remove</button>
+                </form>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="empty">No doctors assigned yet. Use the form above to assign one.</p>
+        {% endif %}
+      </section>
+    {% else %}
+      <p class="empty">No departments exist yet. Add departments first.</p>
+    {% endfor %}
+  </div>
+{% endblock %}
