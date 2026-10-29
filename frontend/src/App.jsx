@@ -14,6 +14,7 @@ export default function App() {
   const [admissions, setAdmissions] = useState([]);
   const [bills, setBills] = useState([]);
   const [medicalForm, setMedicalForm] = useState({ patient: "", diagnosis: "", treatment: "", note: "" });
+  const [billingForm, setBillingForm] = useState({ patient: "", description: "", quantity: "1", unitPrice: "", notes: "" });
   const [form, setForm] = useState({ fullName: "", phone: "", email: "" });
   const [search, setSearch] = useState("");
   const [appointmentForm, setAppointmentForm] = useState({ patient: "", doctor: "", scheduledAt: "", reason: "" });
@@ -85,6 +86,43 @@ export default function App() {
       setNotice("Patient admitted and bed allocated."); await refresh();
     } catch (e) { setNotice(e.message); }
   }
+  async function createBill(e) {
+    e.preventDefault();
+    try {
+      await api("/billing", {
+        method: "POST",
+        body: JSON.stringify({
+          patient: billingForm.patient,
+          items: [{
+            description: billingForm.description,
+            quantity: Number(billingForm.quantity),
+            unitPrice: Number(billingForm.unitPrice)
+          }],
+          notes: billingForm.notes
+        })
+      });
+      setBillingForm({ patient: "", description: "", quantity: "1", unitPrice: "", notes: "" });
+      setNotice("Bill created successfully.");
+      await refresh();
+    } catch (e) { setNotice(e.message); }
+  }
+
+  async function markBillPaid(id) {
+    try {
+      await api(`/billing/${id}/pay`, { method: "PATCH" });
+      setNotice("Bill marked as paid.");
+      await refresh();
+    } catch (e) { setNotice(e.message); }
+  }
+
+  async function cancelBill(id) {
+    try {
+      await api(`/billing/${id}/cancel`, { method: "PATCH" });
+      setNotice("Unpaid bill cancelled.");
+      await refresh();
+    } catch (e) { setNotice(e.message); }
+  }
+
   async function saveMedicalRecord(e) {
     e.preventDefault();
     try {
