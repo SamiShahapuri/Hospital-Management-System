@@ -9,6 +9,23 @@ const router = Router();
 router.use(authenticate);
 
 const isValidId = (value) => mongoose.isValidObjectId(value);
+const hospitalTimeZone = process.env.HOSPITAL_TIME_ZONE || "Asia/Kolkata";
+
+function getHospitalScheduleParts(date) {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: hospitalTimeZone,
+    weekday: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23"
+  }).formatToParts(date);
+  const values = Object.fromEntries(parts.map(({ type, value }) => [type, value]));
+  const weekdays = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+  return {
+    dayOfWeek: weekdays[values.weekday],
+    appointmentTime: `${values.hour}:${values.minute}`
+  };
+}
 
 router.get("/", allowRoles("Admin", "Doctor", "Receptionist"), async (req, res, next) => {
   try {
@@ -63,8 +80,7 @@ router.post("/", allowRoles("Admin", "Receptionist", "Patient"), async (req, res
     }
 
     // Check whether the appointment falls within the doctor's availability.
-    const dayOfWeek = date.getDay();
-    const appointmentTime = `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+    const { dayOfWeek, appointmentTime } = getHospitalScheduleParts(date);
 
     const available = doctorRecord.availability.some((slot) =>
       slot.dayOfWeek === dayOfWeek &&
@@ -89,7 +105,13 @@ router.post("/", allowRoles("Admin", "Receptionist", "Patient"), async (req, res
       { path: "patient", select: "fullName phone" },
       { path: "doctor", select: "fullName specialization department" }
     ]));
-  } catch (error) { next(error); }
+  } catch (error) {
+    // The unique partial index is the race-safe guard; translate its conflict to HTTP 409.
+    if (error.code === 11000) {
+      return res.status(409).json({ message: "Doctor already has an appointment at this time" });
+    }
+    next(error);
+  }
 });
 
 router.patch("/:id/cancel", allowRoles("Admin", "Receptionist", "Patient"), async (req, res, next) => {
