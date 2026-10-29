@@ -126,11 +126,11 @@ npm install
 npm run dev
 ```
 
-The frontend defaults to the API at `http://localhost:5000/api`. Configure `VITE_API_URL` in a frontend `.env` file if your API runs elsewhere. The backend uses `HOSPITAL_TIME_ZONE` for scheduling and defaults to `Asia/Kolkata`. Use demo data only; do not enter real patient information. The included seed credentials and fallback JWT secret are for local demonstrations only and must be replaced before any deployment.
+The frontend defaults to the API at `http://localhost:5000/api`. Configure `VITE_API_URL` in a frontend `.env` file if your API runs elsewhere. The backend uses `HOSPITAL_TIME_ZONE` for scheduling and defaults to `Asia/Kolkata`. Use demo data only; do not enter real patient information. The seeded local demo accounts are Admin `admin@example.com` / `AdminDemo123!`, Receptionist `reception@example.com` / `ReceptionDemo123!`, and Doctor `doctor@example.com` / `DoctorDemo123!`. These credentials and the fallback JWT secret are for local demonstrations only and must be replaced before any deployment. On Windows PowerShell, use `Copy-Item .env.example .env` if `cp` is not available.
 
 ## 🧪 Testing
 
-The submitted test cases are in [`Documents/testPlanDocument.pdf`](Documents/testPlanDocument.pdf). Automated backend checks run with `cd backend && npm test`; CI also checks JavaScript syntax and builds the frontend. See [`Documents/FINAL_VERIFICATION_CHECKLIST.md`](Documents/FINAL_VERIFICATION_CHECKLIST.md) for the remaining manual workflow checks.
+The submitted test cases are in [`Documents/testPlanDocument.pdf`](Documents/testPlanDocument.pdf). Automated backend checks run with `cd backend && npm test`. CI also runs the actual API against a dedicated MongoDB service using `cd backend && npm run test:integration`, checks JavaScript syntax, and builds the frontend. See [`Documents/FINAL_VERIFICATION_CHECKLIST.md`](Documents/FINAL_VERIFICATION_CHECKLIST.md) for the remaining manual workflow checks.
 
 ## 🎥 Demo Videos
 
