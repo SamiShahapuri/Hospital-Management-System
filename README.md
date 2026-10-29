@@ -130,21 +130,21 @@ The frontend defaults to the API at `http://localhost:5000/api`. Configure `VITE
 
 ## 🧪 Testing
 
-The submitted test cases are in [`Documents/testPlanDocument.pdf`](Documents/testPlanDocument.pdf). Automated backend checks run with `cd backend && npm test`; CI also checks JavaScript syntax and builds the frontend.
+The submitted test cases are in [`Documents/testPlanDocument.pdf`](Documents/testPlanDocument.pdf). Automated backend checks run with `cd backend && npm test`; CI also checks JavaScript syntax and builds the frontend. See [`Documents/FINAL_VERIFICATION_CHECKLIST.md`](Documents/FINAL_VERIFICATION_CHECKLIST.md) for the remaining manual workflow checks.
 
 ## 🎥 Demo Videos
 
 | Sprint | Video |
 |---|---|
-| Sprint 1 (1 min) | _add link/file here after Sprint 1_ |
-| Sprint 2 (2 min) | _add link/file here after Sprint 2_ |
+| Login demo | [`VideoDemo/login.mp4`](VideoDemo/login.mp4) |
+| Other workflows | Record and add patient, doctor, appointment, admission, and billing demos before final submission. |
 
 ## 📄 Documentation
 
 | Document | Purpose |
 |---|---|
-| [SRS](Documents/SRSdocument.docx) | Functional and non-functional requirements |
-| [Test Plan](Documents/testPlanDocument.docx) | Test cases per module |
+| [SRS](Documents/SRSdocument.pdf) | Functional and non-functional requirements |
+| [Test Plan](Documents/testPlanDocument.pdf) | Test cases per module |
 | [Use Case Diagram](Documents/useCaseDiagram.jpeg) | Actors and their interactions with the system |
 | [Use Case Flow](Documents/useCaseFlowDocumentation.pdf) | Step-by-step flows for each use case |
 | SAD | [System Architecture Document](Documents/README.md) — verify against the originally submitted SAD before final submission |
