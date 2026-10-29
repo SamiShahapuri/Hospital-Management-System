@@ -6,7 +6,7 @@ import { authenticate, allowRoles } from "../middleware/auth.js";
 const router = Router();
 router.use(authenticate);
 
-router.get("/", allowRoles("Admin", "Doctor", "Receptionist"), async (_req, res, next) => {
+router.get("/", allowRoles("Admin", "Doctor", "Receptionist", "Patient"), async (_req, res, next) => {
   try {
     res.json(await Department.find({ active: true }).sort({ name: 1 }).limit(100));
   } catch (error) { next(error); }
