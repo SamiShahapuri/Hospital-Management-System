@@ -321,6 +321,18 @@ export default function App() {
             {appointments.slice(0, 5).map(a => <div className="list-row" key={a._id}><div className="date-box"><strong>{new Date(a.scheduledAt).getDate()}</strong><small>{new Date(a.scheduledAt).toLocaleString("en", { month: "short" })}</small></div><div className="list-main"><strong>{a.patient?.fullName || "Patient"}</strong><small>{a.doctor?.fullName || "Doctor"} · {new Date(a.scheduledAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</small></div><span className={`status ${a.status.toLowerCase()}`}>{a.status}</span>{a.status === "Booked" && <button className="tiny outline" onClick={() => cancelAppointment(a._id)}>Cancel</button>}</div>)}
             {!appointments.length && <p className="empty">No appointments yet.</p>}
           </div>
+          {user.role === "Patient" && <div className="card"><div className="section-head"><div><h2>My medical records</h2><p className="muted">Your recorded diagnoses, treatment plans, and prescriptions</p></div></div>
+            {(patients[0]?.medicalHistory || []).slice().reverse().map((record, index) => <div className="list-row" key={record._id || `history-${index}`}>
+              <div className="bed-icon">✚</div><div className="list-main"><strong>{record.diagnosis || "Clinical note"}</strong><small>{record.treatment || record.note || "No treatment details recorded"}</small></div>
+              <span className="pill">{record.recordedAt ? new Date(record.recordedAt).toLocaleDateString() : "—"}</span>
+            </div>)}
+            {(patients[0]?.prescriptions || []).slice().reverse().map((prescription, index) => <div className="list-row" key={prescription._id || `prescription-${index}`}>
+              <div className="bed-icon">Rx</div><div className="list-main"><strong>{prescription.medicine}</strong><small>{prescription.instructions || "No instructions recorded"}</small></div>
+              <span className="pill">{prescription.recordedAt ? new Date(prescription.recordedAt).toLocaleDateString() : "—"}</span>
+            </div>)}
+            {!patients[0] && <p className="empty">No patient profile is linked to this account yet.</p>}
+            {patients[0] && !(patients[0].medicalHistory || []).length && !(patients[0].prescriptions || []).length && <p className="empty">No medical records have been added yet.</p>}
+          </div>}
           <div className="card" id="admissions"><div className="section-head"><div><h2>Admissions & beds</h2><p className="muted">Inpatient status</p></div><span className="icon-box">▤</span></div>
             {admissions.filter(a => a.status === "Admitted").slice(0, 4).map(a => <div className="list-row" key={a._id}><div className="bed-icon">▤</div><div className="list-main"><strong>{a.patient?.fullName || "Patient"}</strong><small>Room {a.roomNumber} · Bed {a.bedNumber}</small></div><button className="tiny outline" onClick={() => discharge(a._id)}>Discharge</button></div>)}
             {!admissions.some(a => a.status === "Admitted") && <p className="empty">No active admissions.</p>}
