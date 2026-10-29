@@ -16,6 +16,7 @@ export default function App() {
   const [admissions, setAdmissions] = useState([]);
   const [bills, setBills] = useState([]);
   const [medicalForm, setMedicalForm] = useState({ patient: "", diagnosis: "", treatment: "", note: "" });
+  const [prescriptionForm, setPrescriptionForm] = useState({ patient: "", medicine: "", instructions: "" });
   const [billingForm, setBillingForm] = useState({ patient: "", description: "", quantity: "1", unitPrice: "", notes: "" });
   const [form, setForm] = useState({ fullName: "", phone: "", email: "" });
   const [search, setSearch] = useState("");
@@ -104,6 +105,19 @@ export default function App() {
       setNotice("Patient admitted and bed allocated."); await refresh();
     } catch (e) { setNotice(e.message); }
   }
+  async function savePrescription(e) {
+    e.preventDefault();
+    try {
+      await api(`/patients/${prescriptionForm.patient}/prescriptions`, {
+        method: "POST",
+        body: JSON.stringify({ medicine: prescriptionForm.medicine, instructions: prescriptionForm.instructions })
+      });
+      setPrescriptionForm({ patient: "", medicine: "", instructions: "" });
+      setNotice("Prescription recorded successfully.");
+      await refresh();
+    } catch (e) { setNotice(e.message); }
+  }
+
   async function createBill(e) {
     e.preventDefault();
     try {
@@ -242,6 +256,17 @@ export default function App() {
             <textarea placeholder="Treatment plan" value={medicalForm.treatment} onChange={e => setMedicalForm({ ...medicalForm, treatment: e.target.value })} maxLength="1000" rows="2" required />
             <textarea placeholder="Additional clinical note (optional)" value={medicalForm.note} onChange={e => setMedicalForm({ ...medicalForm, note: e.target.value })} maxLength="1000" rows="2" />
             <button>Save clinical record</button>
+          </form>
+        </div>}
+        {(user.role === "Admin" || user.role === "Doctor") && <div className="card quick-card">
+          <div className="section-head"><div><h2>Record prescription</h2><p className="muted">Store medication instructions on a patient record</p></div></div>
+          <form className="quick-form" onSubmit={savePrescription}>
+            <select value={prescriptionForm.patient} onChange={e => setPrescriptionForm({ ...prescriptionForm, patient: e.target.value })} required>
+              <option value="">Choose patient</option>{patients.map(p => <option key={p._id} value={p._id}>{p.fullName}</option>)}
+            </select>
+            <input placeholder="Medicine" value={prescriptionForm.medicine} onChange={e => setPrescriptionForm({ ...prescriptionForm, medicine: e.target.value })} maxLength="200" required />
+            <textarea placeholder="Dosage and instructions" value={prescriptionForm.instructions} onChange={e => setPrescriptionForm({ ...prescriptionForm, instructions: e.target.value })} maxLength="1000" rows="2" />
+            <button>Save prescription</button>
           </form>
         </div>}
         {(user.role === "Admin" || user.role === "Receptionist") && <div className="card quick-card">
