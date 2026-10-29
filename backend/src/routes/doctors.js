@@ -63,10 +63,14 @@ router.patch("/:id", allowRoles("Admin", "Receptionist"), async (req, res, next)
     const updates = {};
     for (const field of ["fullName", "specialization", "department"]) {
       if (field in req.body) {
-        if (typeof req.body[field] !== "string" || !req.body[field].trim()) {
+        if (typeof req.body[field] !== "string") {
+          return res.status(400).json({ message: `${field} must be text` });
+        }
+        const value = req.body[field].trim();
+        if (field !== "department" && !value) {
           return res.status(400).json({ message: `${field} must be a non-empty string` });
         }
-        updates[field] = req.body[field].trim();
+        updates[field] = value;
       }
     }
     if ("department" in updates && updates.department &&
