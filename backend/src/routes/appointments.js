@@ -4,6 +4,7 @@ import Appointment from "../models/Appointment.js";
 import Patient from "../models/Patient.js";
 import Doctor from "../models/Doctor.js";
 import { authenticate, allowRoles } from "../middleware/auth.js";
+import { parseFutureDate } from "../utils/validation.js";
 
 const router = Router();
 router.use(authenticate);
@@ -73,8 +74,8 @@ router.post("/", allowRoles("Admin", "Receptionist", "Patient"), async (req, res
         return res.status(403).json({ message: "You can only book appointments for your own patient profile" });
       }
     }
-    const date = new Date(scheduledAt);
-    if (!scheduledAt || Number.isNaN(date.getTime()) || date <= new Date()) {
+    const date = parseFutureDate(scheduledAt);
+    if (!date) {
       return res.status(400).json({ message: "Appointment time must be a valid future date and time" });
     }
     if (typeof reason !== "string" || reason.length > 500) {
@@ -143,8 +144,8 @@ router.patch("/:id/reschedule", allowRoles("Admin", "Receptionist", "Patient"), 
       }
     }
 
-    const date = new Date(req.body.scheduledAt);
-    if (!req.body.scheduledAt || Number.isNaN(date.getTime()) || date <= new Date()) {
+    const date = parseFutureDate(req.body.scheduledAt);
+    if (!date) {
       return res.status(400).json({ message: "Appointment time must be a valid future date and time" });
     }
     const doctorId = req.body.doctor || String(appointment.doctor);
