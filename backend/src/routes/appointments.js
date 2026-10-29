@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import Appointment from "../models/Appointment.js";
 import Patient from "../models/Patient.js";
 import Doctor from "../models/Doctor.js";
+import User from "../models/User.js";
 import { authenticate, allowRoles } from "../middleware/auth.js";
 
 const router = Router();
@@ -27,7 +28,7 @@ function getHospitalScheduleParts(date) {
   };
 }
 
-router.get("/", allowRoles("Admin", "Doctor", "Receptionist"), async (req, res, next) => {
+router.get("/", allowRoles("Admin", "Doctor", "Receptionist", "Patient"), async (req, res, next) => {
   try {
     const filter = {};
     if (req.query.status) {
@@ -45,6 +46,15 @@ router.get("/", allowRoles("Admin", "Doctor", "Receptionist"), async (req, res, 
       if (!isValidId(req.query.patient)) return res.status(400).json({ message: "Invalid patient ID" });
       filter.patient = req.query.patient;
     }
+    if (req.user.role === "Patient") {
+      const account = await User.findById(req.user.id).select("email");
+      const ownProfile = account?.email ? await Patient.findOne({ email: account.email }) : null;
+      if (!ownProfile) return res.json([]);
+      if (req.query.patient && String(ownProfile._id) !== String(req.query.patient)) {
+        return res.status(403).json({ message: "You can only view your own appointments" });
+      }
+      filter.patient = ownProfile._id;
+    }
     const appointments = await Appointment.find(filter)
       .populate("patient", "fullName phone")
       .populate("doctor", "fullName specialization department")
@@ -58,6 +68,13 @@ router.post("/", allowRoles("Admin", "Receptionist", "Patient"), async (req, res
     const { patient, doctor, scheduledAt, reason = "" } = req.body;
     if (!isValidId(patient) || !isValidId(doctor)) {
       return res.status(400).json({ message: "Valid patient and doctor IDs are required" });
+    }
+    if (req.user.role === "Patient") {
+      const account = await User.findById(req.user.id).select("email");
+      const ownProfile = account?.email ? await Patient.findOne({ email: account.email }) : null;
+      if (!ownProfile || String(ownProfile._id) !== String(patient)) {
+        return res.status(403).json({ message: "You can only book appointments for your own patient profile" });
+      }
     }
     const date = new Date(scheduledAt);
     if (!scheduledAt || Number.isNaN(date.getTime()) || date <= new Date()) {
@@ -119,6 +136,13 @@ router.patch("/:id/cancel", allowRoles("Admin", "Receptionist", "Patient"), asyn
     if (!isValidId(req.params.id)) return res.status(400).json({ message: "Invalid appointment ID" });
     const appointment = await Appointment.findById(req.params.id);
     if (!appointment) return res.status(404).json({ message: "Appointment not found" });
+    if (req.user.role === "Patient") {
+      const account = await User.findById(req.user.id).select("email");
+      const ownProfile = account?.email ? await Patient.findOne({ email: account.email }) : null;
+      if (!ownProfile || String(appointment.patient) !== String(ownProfile._id)) {
+        return res.status(403).json({ message: "You can only cancel your own appointments" });
+      }
+    }
     if (appointment.status !== "Booked") {
       return res.status(409).json({ message: "Only booked appointments can be cancelled" });
     }
