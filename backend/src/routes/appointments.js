@@ -68,8 +68,7 @@ router.post("/", allowRoles("Admin", "Receptionist", "Patient"), async (req, res
       return res.status(400).json({ message: "Valid patient and doctor IDs are required" });
     }
     if (req.user.role === "Patient") {
-      const account = await User.findById(req.user.id).select("email");
-      const ownProfile = account?.email ? await Patient.findOne({ email: account.email }) : null;
+      const ownProfile = await Patient.findOne({ linkedUser: req.user.id });
       if (!ownProfile || String(ownProfile._id) !== String(patient)) {
         return res.status(403).json({ message: "You can only book appointments for your own patient profile" });
       }
