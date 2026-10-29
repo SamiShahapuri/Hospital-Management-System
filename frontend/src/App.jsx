@@ -369,6 +369,24 @@ export default function App() {
             {admissions.filter(a => a.status === "Admitted").slice(0, 4).map(a => <div className="list-row" key={a._id}><div className="bed-icon">▤</div><div className="list-main"><strong>{a.patient?.fullName || "Patient"}</strong><small>Room {a.roomNumber} · Bed {a.bedNumber}</small></div><button className="tiny outline" onClick={() => discharge(a._id)}>Discharge</button></div>)}
             {!admissions.some(a => a.status === "Admitted") && <p className="empty">No active admissions.</p>}
           </div>
+          {(user.role === "Admin" || user.role === "Doctor" || user.role === "Receptionist") && <div className="card"><div className="section-head"><div><h2>Notifications</h2><p className="muted">Upcoming appointments and unpaid bills</p></div><span className="icon-box">♧</span></div>
+            {notifications.slice(0, 5).map(notification => <div className="list-row" key={notification.id}>
+              <div className="bed-icon">!</div><div className="list-main"><strong>{notification.type}</strong><small>{notification.message}</small></div>
+              <span className="pill">{new Date(notification.dueAt).toLocaleDateString()}</span>
+            </div>)}
+            {!notifications.length && <p className="empty">No reminders to show.</p>}
+          </div>}
+          {user.role === "Admin" && reportSummary && <div className="card"><div className="section-head"><div><h2>Operations report</h2><p className="muted">Live summary across hospital records</p></div><span className="icon-box">▤</span></div>
+            <div className="report-grid">
+              <div><small>Patients</small><strong>{reportSummary.patients}</strong></div>
+              <div><small>Active doctors</small><strong>{reportSummary.activeDoctors}</strong></div>
+              <div><small>Booked appointments</small><strong>{reportSummary.appointments?.Booked || 0}</strong></div>
+              <div><small>Active admissions</small><strong>{reportSummary.admissions?.Admitted || 0}</strong></div>
+              <div><small>Paid revenue</small><strong>₹{Number(reportSummary.paidRevenue || 0).toFixed(2)}</strong></div>
+              <div><small>Outstanding</small><strong>₹{Number(reportSummary.outstandingAmount || 0).toFixed(2)}</strong></div>
+            </div>
+            <small className="muted">Generated {new Date(reportSummary.generatedAt).toLocaleString()}</small>
+          </div>}
           {(user.role === "Admin" || user.role === "Doctor") && <div className="card"><div className="section-head"><div><h2>Recent clinical records</h2><p className="muted">Latest diagnosis and treatment entries</p></div></div>
             {patients.flatMap(p => (p.medicalHistory || []).map((h, index) => ({ ...h, patientName: p.fullName, patientId: p._id, fallbackKey: index })))
               .sort((a, b) => new Date(b.recordedAt || 0) - new Date(a.recordedAt || 0)).slice(0, 5).map(h =>
