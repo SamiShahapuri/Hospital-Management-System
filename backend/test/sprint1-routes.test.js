@@ -94,4 +94,18 @@ test("appointment database index prevents concurrent active-slot duplicates", ()
   assert.ok(model.includes('unique: true, partialFilterExpression: { status: "Booked" }'));
   assert.ok(routes.includes("error.code === 11000"));
   assert.ok(routes.includes("timeZone: hospitalTimeZone"));
+  assert.ok(routes.includes('router.patch("/:id/reschedule"'));
+  assert.ok(routes.includes("Only booked appointments can be rescheduled"));
+});
+
+test("frontend connects Sprint 2 workflows and expired-token handling", () => {
+  const app = source("../../frontend/src/App.jsx");
+  const api = source("../../frontend/src/api.js");
+  assert.ok(app.includes('api("/admissions")'));
+  assert.ok(app.includes('api("/billing")'));
+  assert.ok(app.includes("saveMedicalRecord"));
+  assert.ok(app.includes("savePrescription"));
+  assert.ok(app.includes("saveReschedule"));
+  assert.ok(app.includes("submitRegistration"));
+  assert.ok(api.includes("error.status = response.status"));
 });
