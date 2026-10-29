@@ -29,7 +29,7 @@ router.post("/", allowRoles("Admin", "Receptionist"), async (req, res, next) => 
     if (fullName.length > 120 || phone.length > 30 || address.length > 300) {
       return res.status(400).json({ message: "Patient name, phone, or address exceeds the allowed length" });
     }
-    if (phone && !/^\\+?[0-9 ()-]{7,30}$/.test(phone)) {
+    if (phone && !/^\+?[0-9 ()-]{7,30}$/.test(phone)) {
       return res.status(400).json({ message: "Enter a valid phone number" });
     }
     if (email && !isValidEmail(email)) return res.status(400).json({ message: "Enter a valid email address" });
