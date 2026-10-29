@@ -106,7 +106,7 @@ test("MongoDB-backed API workflows: authentication, records, appointments, admis
   const patientPayload = {
     fullName: `Integration Patient ${suffix}`,
     phone: "+91 98765 43210",
-    email: `integration-${suffix}@example.com",
+    email: `integration-${suffix}@example.com`,
     address: "Integration test address"
   };
   const patientCreated = await request("/patients", { token: receptionist.token, method: "POST", body: patientPayload });
