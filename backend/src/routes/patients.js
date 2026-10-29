@@ -27,8 +27,28 @@ router.get("/:id", allowRoles("Admin", "Doctor", "Receptionist"), async (req, re
 });
 router.post("/:id/history", allowRoles("Admin", "Doctor"), async (req, res, next) => {
   try {
-    if (!req.body.note?.trim()) return res.status(400).json({ message: "History note is required" });
-    const patient = await Patient.findByIdAndUpdate(req.params.id, { $push: { medicalHistory: { note: req.body.note.trim() } } }, { new: true, runValidators: true });
+    if (!/^[a-f\\d]{24}$/i.test(req.params.id)) {
+      return res.status(400).json({ message: "Invalid patient ID" });
+    }
+    const diagnosis = typeof req.body.diagnosis === "string" ? req.body.diagnosis.trim() : "";
+    const treatment = typeof req.body.treatment === "string" ? req.body.treatment.trim() : "";
+    const note = typeof req.body.note === "string" ? req.body.note.trim() : "";
+    if (!diagnosis && !treatment && !note) {
+      return res.status(400).json({ message: "Enter a diagnosis, treatment, or clinical note" });
+    }
+    if (diagnosis.length > 300 || treatment.length > 1000 || note.length > 1000) {
+      return res.status(400).json({ message: "Clinical record is too long" });
+    }
+    const patient = await Patient.findByIdAndUpdate(
+      req.params.id,
+      { $push: { medicalHistory: {
+        diagnosis, treatment,
+        note: note || [diagnosis && `Diagnosis: ${diagnosis}`, treatment && `Treatment: ${treatment}`].filter(Boolean).join(" | "),
+        recordedBy: req.user.id,
+        recordedAt: new Date()
+      } } },
+      { new: true, runValidators: true }
+    );
     if (!patient) return res.status(404).json({ message: "Patient not found" });
     res.json(patient);
   } catch (e) { next(e); }
