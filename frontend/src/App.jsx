@@ -32,6 +32,8 @@ export default function App() {
   const [doctorForm, setDoctorForm] = useState({ fullName: "", specialization: "", department: "" });
   const [departmentForm, setDepartmentForm] = useState({ name: "", description: "" });
   const [departments, setDepartments] = useState([]);
+  const [selectedPatient, setSelectedPatient] = useState(null);
+  const [loadingPatientDetails, setLoadingPatientDetails] = useState(false);
   const [editingDoctor, setEditingDoctor] = useState("");
   const [doctorEditForm, setDoctorEditForm] = useState({ fullName: "", specialization: "", department: "" });
   const [editingDepartment, setEditingDepartment] = useState("");
@@ -88,6 +90,19 @@ export default function App() {
       setRegisterMode(false);
       setNotice("Patient account created. Sign in to continue.");
     } catch (e) { setNotice(e.message); }
+  }
+
+  async function viewPatientDetails(id) {
+    setLoadingPatientDetails(true);
+    try {
+      const patient = await api(`/patients/${id}`);
+      setSelectedPatient(patient);
+      setNotice("");
+    } catch (e) {
+      setNotice(e.message);
+    } finally {
+      setLoadingPatientDetails(false);
+    }
   }
 
   async function registerPatient(e) {
@@ -474,11 +489,11 @@ export default function App() {
             <button>+ Register</button>
           </form>}
           <input className="search" placeholder="⌕  Search patients by name..." value={search} onChange={e => setSearch(e.target.value)} />
-          <div className="table-wrap"><table><thead><tr><th>Patient</th><th>Phone</th><th>Registered</th></tr></thead><tbody>
-            {filteredPatients.map(p => <tr key={p._id}><td><div className="person"><span className="mini-avatar">{p.fullName[0]}</span><strong>{p.fullName}</strong></div></td><td>{p.phone || "—"}</td><td>{new Date(p.createdAt).toLocaleDateString()}</td></tr>)}
+          <div className="table-wrap"><table><thead><tr><th>Patient</th><th>Phone</th><th>Registered</th><th>Details</th></tr></thead><tbody>
+            {filteredPatients.map(p => <tr key={p._id}><td><div className="person"><span className="mini-avatar">{p.fullName[0]}</span><strong>{p.fullName}</strong></div></td><td>{p.phone || "—"}</td><td>{new Date(p.createdAt).toLocaleDateString()}</td><td><button type="button" className="tiny outline" onClick={() => viewPatientDetails(p._id)} disabled={loadingPatientDetails}>{loadingPatientDetails ? "Loading…" : "View"}</button></td></tr>)}
             {!filteredPatients.length && (
   <tr>
-    <td colSpan="3" className="empty">
+    <td colSpan="4" className="empty">
       {search.trim()
         ? "No patients match your search."
         : "No patient records yet. Register a patient to get started."}
@@ -488,6 +503,36 @@ export default function App() {
           </tbody></table></div>
         </div>
         <div className="right-column">
+          {selectedPatient && <div className="card" id="patient-details">
+            <div className="section-head">
+              <div><h2>Patient details</h2><p className="muted">Full patient profile and clinical records</p></div>
+              <button type="button" className="tiny outline" onClick={() => setSelectedPatient(null)}>Close</button>
+            </div>
+            <div className="patient-details-grid">
+              <div><small>Full name</small><strong>{selectedPatient.fullName || "—"}</strong></div>
+              <div><small>Phone</small><strong>{selectedPatient.phone || "—"}</strong></div>
+              <div><small>Email</small><strong>{selectedPatient.email || "—"}</strong></div>
+              <div><small>Date of birth</small><strong>{selectedPatient.dateOfBirth ? new Date(selectedPatient.dateOfBirth).toLocaleDateString() : "—"}</strong></div>
+              <div className="detail-wide"><small>Address</small><strong>{selectedPatient.address || "—"}</strong></div>
+            </div>
+            <div className="detail-section">
+              <h3>Clinical history</h3>
+              {(selectedPatient.medicalHistory || []).slice().reverse().map((entry, index) => <div className="detail-entry" key={entry._id || `clinical-${index}`}>
+                <strong>{entry.diagnosis || "Clinical note"}</strong>
+                <span>{entry.treatment || entry.note || "No treatment details recorded"}</span>
+                <small>{entry.recordedAt ? new Date(entry.recordedAt).toLocaleString() : "Date not recorded"}</small>
+              </div>)}
+              {!(selectedPatient.medicalHistory || []).length && <p className="empty">No clinical history recorded.</p>}
+            </div>
+            <div className="detail-section">
+              <h3>Prescriptions</h3>
+              {(selectedPatient.prescriptions || []).slice().reverse().map((entry, index) => <div className="detail-entry" key={entry._id || `prescription-${index}`}>
+                <strong>{entry.medicine}</strong>
+                <span>{entry.instructions || "No instructions recorded"}</span>
+              </div>)}
+              {!(selectedPatient.prescriptions || []).length && <p className="empty">No prescriptions recorded.</p>}
+            </div>
+          </div>}
           <div className="card" id="appointments"><div className="section-head"><div><h2>Appointments</h2><p className="muted">Upcoming schedule</p></div><span className="icon-box">▦</span></div>
             {appointments.slice(0, 5).map(a => <div className="list-row" key={a._id}><div className="date-box"><strong>{new Date(a.scheduledAt).getDate()}</strong><small>{new Date(a.scheduledAt).toLocaleString("en", { month: "short" })}</small></div><div className="list-main"><strong>{a.patient?.fullName || "Patient"}</strong><small>{a.doctor?.fullName || "Doctor"} · {new Date(a.scheduledAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</small></div><span className={`status ${a.status.toLowerCase()}`}>{a.status}</span>{a.status === "Booked" && ["Admin", "Doctor"].includes(user.role) && <button className="tiny outline" onClick={() => completeAppointment(a._id)}>Complete</button>}{a.status === "Booked" && ["Admin", "Receptionist", "Patient"].includes(user.role) && <><button className="tiny outline" onClick={() => startReschedule(a)}>Reschedule</button><button className="tiny outline" onClick={() => cancelAppointment(a._id)}>Cancel</button></>}</div>)}
             {reschedulingAppointment && appointments.some(a => a._id === reschedulingAppointment) && <form className="reschedule-form" onSubmit={saveReschedule}>
