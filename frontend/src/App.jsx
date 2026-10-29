@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { api, saveSession, clearSession } from "./api";
 
-const initialLogin = { email: "admin@example.com", password: "AdminDemo123!" };
+const initialLogin = { email: "", password: "" };
 export default function App() {
   const [user, setUser] = useState(() => {
     try { return JSON.parse(localStorage.getItem("hms_user")); } catch { return null; }
@@ -44,6 +44,9 @@ export default function App() {
         canSeeReports ? api("/reports/summary") : Promise.resolve(null)
       ]);
       setPatients(p); setDoctors(d); setAppointments(a); setAdmissions(ad); setDepartments(depts);
+      if (user?.role === "Patient" && p[0]?._id) {
+        setAppointmentForm(current => ({ ...current, patient: p[0]._id }));
+      }
       setBills(b); setNotifications(n); setReportSummary(report); setNotice("");
     } catch (e) {
       setNotice(e.message);
@@ -99,8 +102,13 @@ export default function App() {
 
   async function bookAppointment(e) {
     e.preventDefault();
+    const scheduledDate = appointmentForm.scheduledAt ? new Date(appointmentForm.scheduledAt) : null;
+    if (!scheduledDate || Number.isNaN(scheduledDate.getTime()) || scheduledDate <= new Date()) {
+      setNotice("Choose a valid future appointment date and time.");
+      return;
+    }
     try {
-      await api("/appointments", { method: "POST", body: JSON.stringify({ ...appointmentForm, scheduledAt: new Date(appointmentForm.scheduledAt).toISOString() }) });
+      await api("/appointments", { method: "POST", body: JSON.stringify({ ...appointmentForm, scheduledAt: scheduledDate.toISOString() }) });
       setAppointmentForm({ patient: "", doctor: "", scheduledAt: "", reason: "" });
       setNotice("Appointment booked successfully."); await refresh();
     } catch (e) { setNotice(e.message); }
@@ -188,10 +196,15 @@ export default function App() {
 
   async function saveReschedule(e) {
     e.preventDefault();
+    const scheduledDate = rescheduleDate ? new Date(rescheduleDate) : null;
+    if (!scheduledDate || Number.isNaN(scheduledDate.getTime()) || scheduledDate <= new Date()) {
+      setNotice("Choose a valid future appointment date and time.");
+      return;
+    }
     try {
       await api(`/appointments/${reschedulingAppointment}/reschedule`, {
         method: "PATCH",
-        body: JSON.stringify({ scheduledAt: new Date(rescheduleDate).toISOString() })
+        body: JSON.stringify({ scheduledAt: scheduledDate.toISOString() })
       });
       setReschedulingAppointment("");
       setRescheduleDate("");
@@ -257,7 +270,7 @@ export default function App() {
         {(user.role === "Admin" || user.role === "Receptionist" || user.role === "Patient") && <div className="card quick-card">
           <div className="section-head"><div><h2>Book appointment</h2><p className="muted">Select a patient, doctor and future time</p></div></div>
           <form className="quick-form" onSubmit={bookAppointment}>
-            <select value={appointmentForm.patient} onChange={e => setAppointmentForm({ ...appointmentForm, patient: e.target.value })} required><option value="">Choose patient</option>{patients.map(p => <option key={p._id} value={p._id}>{p.fullName}</option>)}</select>
+            <select value={appointmentForm.patient} onChange={e => setAppointmentForm({ ...appointmentForm, patient: e.target.value })} required><option value="">{user.role === "Patient" ? "Your patient profile" : "Choose patient"}</option>{patients.map(p => <option key={p._id} value={p._id}>{p.fullName}</option>)}</select>
             <select value={appointmentForm.doctor} onChange={e => setAppointmentForm({ ...appointmentForm, doctor: e.target.value })} required><option value="">Choose doctor</option>{doctors.map(d => <option key={d._id} value={d._id}>{d.fullName} — {d.specialization}</option>)}</select>
             <input type="datetime-local" min={new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16)} value={appointmentForm.scheduledAt} onChange={e => setAppointmentForm({ ...appointmentForm, scheduledAt: e.target.value })} required />
             <input placeholder="Reason (optional)" value={appointmentForm.reason} onChange={e => setAppointmentForm({ ...appointmentForm, reason: e.target.value })} />
@@ -346,7 +359,7 @@ export default function App() {
         </div>
         <div className="right-column">
           <div className="card" id="appointments"><div className="section-head"><div><h2>Appointments</h2><p className="muted">Upcoming schedule</p></div><span className="icon-box">▦</span></div>
-            {appointments.slice(0, 5).map(a => <div className="list-row" key={a._id}><div className="date-box"><strong>{new Date(a.scheduledAt).getDate()}</strong><small>{new Date(a.scheduledAt).toLocaleString("en", { month: "short" })}</small></div><div className="list-main"><strong>{a.patient?.fullName || "Patient"}</strong><small>{a.doctor?.fullName || "Doctor"} · {new Date(a.scheduledAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</small></div><span className={`status ${a.status.toLowerCase()}`}>{a.status}</span>{a.status === "Booked" && <><button className="tiny outline" onClick={() => startReschedule(a)}>Reschedule</button><button className="tiny outline" onClick={() => cancelAppointment(a._id)}>Cancel</button></>}</div>)}
+            {appointments.slice(0, 5).map(a => <div className="list-row" key={a._id}><div className="date-box"><strong>{new Date(a.scheduledAt).getDate()}</strong><small>{new Date(a.scheduledAt).toLocaleString("en", { month: "short" })}</small></div><div className="list-main"><strong>{a.patient?.fullName || "Patient"}</strong><small>{a.doctor?.fullName || "Doctor"} · {new Date(a.scheduledAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</small></div><span className={`status ${a.status.toLowerCase()}`}>{a.status}</span>{a.status === "Booked" && ["Admin", "Receptionist", "Patient"].includes(user.role) && <><button className="tiny outline" onClick={() => startReschedule(a)}>Reschedule</button><button className="tiny outline" onClick={() => cancelAppointment(a._id)}>Cancel</button></>}</div>)}
             {reschedulingAppointment && appointments.some(a => a._id === reschedulingAppointment) && <form className="reschedule-form" onSubmit={saveReschedule}>
               <label>New appointment time<input type="datetime-local" min={new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16)} value={rescheduleDate} onChange={e => setRescheduleDate(e.target.value)} required /></label>
               <button>Save new time</button><button type="button" className="outline" onClick={() => { setReschedulingAppointment(""); setRescheduleDate(""); }}>Cancel edit</button>
