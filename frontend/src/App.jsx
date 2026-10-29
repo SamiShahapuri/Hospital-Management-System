@@ -7,6 +7,8 @@ export default function App() {
     try { return JSON.parse(localStorage.getItem("hms_user")); } catch { return null; }
   });
   const [login, setLogin] = useState(initialLogin);
+  const [registerMode, setRegisterMode] = useState(false);
+  const [registrationForm, setRegistrationForm] = useState({ name: "", email: "", password: "" });
   const [notice, setNotice] = useState("");
   const [patients, setPatients] = useState([]);
   const [doctors, setDoctors] = useState([]);
@@ -25,14 +27,19 @@ export default function App() {
 
   async function refresh() {
     try {
+      const canManageAdmissions = ["Admin", "Doctor", "Receptionist"].includes(user?.role);
       const canManageBilling = user?.role === "Admin" || user?.role === "Receptionist";
       const [p, d, a, ad, depts, b] = await Promise.all([
-        api("/patients"), api("/doctors"), api("/appointments"), api("/admissions"),
+        api("/patients"), api("/doctors"), api("/appointments"),
+        canManageAdmissions ? api("/admissions") : Promise.resolve([]),
         api("/departments"), canManageBilling ? api("/billing") : Promise.resolve([])
       ]);
       setPatients(p); setDoctors(d); setAppointments(a); setAdmissions(ad); setDepartments(depts);
       setBills(b); setNotice("");
-    } catch (e) { setNotice(e.message); }
+    } catch (e) {
+      setNotice(e.message);
+      if (e.status === 401) { clearSession(); setUser(null); }
+    }
   }
   useEffect(() => { if (user) refresh(); }, [user]);
 
@@ -43,6 +50,17 @@ export default function App() {
       saveSession(data); setUser(data.user); setNotice(`Welcome, ${data.user.name}`);
     } catch (e) { setNotice(e.message); }
   }
+  async function submitRegistration(e) {
+    e.preventDefault();
+    try {
+      await api("/auth/register", { method: "POST", body: JSON.stringify(registrationForm) });
+      setLogin({ email: registrationForm.email, password: registrationForm.password });
+      setRegistrationForm({ name: "", email: "", password: "" });
+      setRegisterMode(false);
+      setNotice("Patient account created. Sign in to continue.");
+    } catch (e) { setNotice(e.message); }
+  }
+
   async function registerPatient(e) {
     e.preventDefault();
     try {
