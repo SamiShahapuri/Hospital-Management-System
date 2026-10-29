@@ -9,6 +9,8 @@ import departmentRoutes from "./routes/departments.js";
 import appointmentRoutes from "./routes/appointments.js";
 import admissionRoutes from "./routes/admissions.js";
 import billingRoutes from "./routes/billing.js";
+import notificationRoutes from "./routes/notifications.js";
+import reportRoutes from "./routes/reports.js";
 
 if (process.env.NODE_ENV === "production" && !process.env.JWT_SECRET) {
   console.error("JWT_SECRET must be set in production.");
@@ -26,6 +28,8 @@ app.use("/api/departments", departmentRoutes);
 app.use("/api/appointments", appointmentRoutes);
 app.use("/api/admissions", admissionRoutes);
 app.use("/api/billing", billingRoutes);
+app.use("/api/notifications", notificationRoutes);
+app.use("/api/reports", reportRoutes);
 app.use((req, res) => res.status(404).json({ message: "Route not found: " + req.method + " " + req.path }));
 app.use((err, _req, res, _next) => {
   console.error(err.message);
