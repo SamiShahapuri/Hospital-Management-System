@@ -1,12 +1,22 @@
 import { Router } from "express";
+import mongoose from "mongoose";
 import Patient from "../models/Patient.js";
+import User from "../models/User.js";
 import { authenticate, allowRoles } from "../middleware/auth.js";
 const router = Router();
 router.use(authenticate);
-router.get("/", allowRoles("Admin", "Doctor", "Receptionist"), async (req, res, next) => {
+router.get("/", allowRoles("Admin", "Doctor", "Receptionist", "Patient"), async (req, res, next) => {
   try {
     const q = String(req.query.q || "").trim();
+    const filter = q ? { fullName: { $regex: q.replace(/[.*+?^$()|[\]\\{}]/g, "\\    const q = String(req.query.q || "").trim();
     const filter = q ? { fullName: { $regex: q.replace(/[.*+?^$()|[\]\\{}]/g, "\\$&"), $options: "i" } } : {};
+    res.json(await Patient.find(filter).sort({ createdAt: -1 }).limit(100));"), $options: "i" } } : {};
+    if (req.user.role === "Patient") {
+      const account = await User.findById(req.user.id).select("email");
+      const ownProfile = account?.email ? await Patient.findOne({ email: account.email }) : null;
+      if (!ownProfile) return res.json([]);
+      filter._id = ownProfile._id;
+    }
     res.json(await Patient.find(filter).sort({ createdAt: -1 }).limit(100));
   } catch (e) { next(e); }
 });
@@ -18,10 +28,17 @@ router.post("/", allowRoles("Admin", "Receptionist"), async (req, res, next) => 
     res.status(201).json(patient);
   } catch (e) { next(e); }
 });
-router.get("/:id", allowRoles("Admin", "Doctor", "Receptionist"), async (req, res, next) => {
+router.get("/:id", allowRoles("Admin", "Doctor", "Receptionist", "Patient"), async (req, res, next) => {
   try {
+    if (!mongoose.isValidObjectId(req.params.id)) return res.status(400).json({ message: "Invalid patient ID" });
     const patient = await Patient.findById(req.params.id);
     if (!patient) return res.status(404).json({ message: "Patient not found" });
+    if (req.user.role === "Patient") {
+      const account = await User.findById(req.user.id).select("email");
+      if (!account?.email || patient.email !== account.email) {
+        return res.status(403).json({ message: "You can only view your own patient record" });
+      }
+    }
     res.json(patient);
   } catch (e) { next(e); }
 });
