@@ -13,6 +13,7 @@ const patientSchema = new mongoose.Schema({
     recordedAt: { type: Date, default: Date.now }
   }],
   prescriptions: [{ medicine: { type: String, required: true }, instructions: { type: String, default: "" }, recordedAt: { type: Date, default: Date.now } }],
+  linkedUser: { type: mongoose.Schema.Types.ObjectId, ref: "User", index: true },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" }
 }, { timestamps: true });
 export default mongoose.model("Patient", patientSchema);
