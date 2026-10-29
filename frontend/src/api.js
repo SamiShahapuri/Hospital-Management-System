@@ -26,6 +26,7 @@ export async function api(path, options = {}) {
     error.status = response.status;
     if (response.status === 401 && !["/auth/login", "/auth/register"].includes(path)) {
       clearSession();
+      if (typeof window !== "undefined") window.dispatchEvent(new Event("hms:session-expired"));
     }
     throw error;
   }
