@@ -54,5 +54,5 @@ Use a local demo database only. Do not enter real patient or clinical data. Reco
 - Notifications are in-app dashboard reminders, not email or SMS messages.
 - The current data model stores a doctor's department by name, not as a foreign-key reference to the department document.
 - The room/bed model prevents two active admissions from sharing a room/bed, but it does not define a preconfigured inventory of valid rooms or beds.
-- Automated tests currently include source-wiring checks and unit tests for shared validation helpers. This checklist requires manual API/UI/database verification; do not mark it complete based solely on a passing build.
+- CI runs source-wiring checks, validation unit tests, and a MongoDB-backed HTTP integration workflow covering authentication, role restrictions, patient persistence, doctors/departments, appointment conflicts and lifecycle, admissions/discharge, clinical records, billing transitions, notifications, and reports. Manual browser usability and responsive-layout checks are still required; a passing API suite/build does not replace them.
 - The repository snapshot does not include the originally submitted SAD. Add it or record its separate location before the final hand-in.
