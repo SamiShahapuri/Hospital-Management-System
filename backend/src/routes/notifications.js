@@ -8,7 +8,7 @@ router.use(authenticate);
 
 // These are live, in-app reminders generated from stored business records.
 // They are intentionally not represented as sent email/SMS notifications.
-router.get("/", allowRoles("Admin", "Doctor", "Receptionist"), async (_req, res, next) => {
+router.get("/", allowRoles("Admin", "Doctor", "Receptionist"), async (req, res, next) => {
   try {
     const now = new Date();
     const until = new Date(now.getTime() + 24 * 60 * 60 * 1000);
@@ -18,10 +18,12 @@ router.get("/", allowRoles("Admin", "Doctor", "Receptionist"), async (_req, res,
         .populate("doctor", "fullName")
         .sort({ scheduledAt: 1 })
         .limit(20),
-      Bill.find({ status: "Unpaid" })
-        .populate("patient", "fullName")
-        .sort({ issuedAt: 1 })
-        .limit(20)
+      req.user.role === "Admin" || req.user.role === "Receptionist"
+        ? Bill.find({ status: "Unpaid" })
+          .populate("patient", "fullName")
+          .sort({ issuedAt: 1 })
+          .limit(20)
+        : Promise.resolve([])
     ]);
     const reminders = [
       ...appointments.map((appointment) => ({
