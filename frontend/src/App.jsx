@@ -29,6 +29,10 @@ export default function App() {
   const [doctorForm, setDoctorForm] = useState({ fullName: "", specialization: "", department: "" });
   const [departmentForm, setDepartmentForm] = useState({ name: "", description: "" });
   const [departments, setDepartments] = useState([]);
+  const [editingDoctor, setEditingDoctor] = useState("");
+  const [doctorEditForm, setDoctorEditForm] = useState({ fullName: "", specialization: "", department: "" });
+  const [editingDepartment, setEditingDepartment] = useState("");
+  const [departmentEditForm, setDepartmentEditForm] = useState({ name: "", description: "" });
 
   async function refresh() {
     try {
@@ -96,6 +100,69 @@ export default function App() {
       await api("/departments", { method: "POST", body: JSON.stringify(departmentForm) });
       setDepartmentForm({ name: "", description: "" });
       setNotice("Department created successfully.");
+      await refresh();
+    } catch (e) { setNotice(e.message); }
+  }
+
+  function beginDoctorEdit(doctor) {
+    setEditingDoctor(doctor._id);
+    setDoctorEditForm({
+      fullName: doctor.fullName || "",
+      specialization: doctor.specialization || "",
+      department: doctor.department || ""
+    });
+  }
+
+  async function saveDoctorEdit(e) {
+    e.preventDefault();
+    try {
+      await api(`/doctors/${editingDoctor}`, {
+        method: "PATCH",
+        body: JSON.stringify(doctorEditForm)
+      });
+      setEditingDoctor("");
+      setNotice("Doctor profile updated.");
+      await refresh();
+    } catch (e) { setNotice(e.message); }
+  }
+
+  async function deactivateDoctor(id) {
+    if (!window.confirm("Deactivate this doctor? Existing appointments will remain in history.")) return;
+    try {
+      await api(`/doctors/${id}`, { method: "DELETE" });
+      if (editingDoctor === id) setEditingDoctor("");
+      setNotice("Doctor deactivated.");
+      await refresh();
+    } catch (e) { setNotice(e.message); }
+  }
+
+  function beginDepartmentEdit(department) {
+    setEditingDepartment(department._id);
+    setDepartmentEditForm({
+      name: department.name || "",
+      description: department.description || ""
+    });
+  }
+
+  async function saveDepartmentEdit(e) {
+    e.preventDefault();
+    try {
+      await api(`/departments/${editingDepartment}`, {
+        method: "PATCH",
+        body: JSON.stringify(departmentEditForm)
+      });
+      setEditingDepartment("");
+      setNotice("Department updated; assigned doctor records were synchronized.");
+      await refresh();
+    } catch (e) { setNotice(e.message); }
+  }
+
+  async function deactivateDepartment(id) {
+    if (!window.confirm("Deactivate this department? Active doctors must be reassigned or deactivated first.")) return;
+    try {
+      await api(`/departments/${id}`, { method: "DELETE" });
+      if (editingDepartment === id) setEditingDepartment("");
+      setNotice("Department deactivated.");
       await refresh();
     } catch (e) { setNotice(e.message); }
   }
@@ -274,6 +341,30 @@ export default function App() {
             <select value={doctorForm.department} onChange={e => setDoctorForm({ ...doctorForm, department: e.target.value })}><option value="">No department yet</option>{departments.map(d => <option key={d._id} value={d.name}>{d.name}</option>)}</select>
             <button>Add doctor</button>
           </form>
+          <div className="manage-list" aria-label="Active doctor management">
+            {doctors.map(doctor => <div className="manage-row" key={doctor._id}>
+              <div className="manage-main"><strong>{doctor.fullName}</strong><small>{doctor.specialization}{doctor.department ? ` · ${doctor.department}` : ""}</small></div>
+              <div className="manage-actions">
+                <button type="button" className="tiny outline" onClick={() => beginDoctorEdit(doctor)}>Edit</button>
+                {user.role === "Admin" && <button type="button" className="tiny outline" onClick={() => deactivateDoctor(doctor._id)}>Deactivate</button>}
+              </div>
+            </div>)}
+            {!doctors.length && <p className="empty">No active doctors yet.</p>}
+          </div>
+          {editingDoctor && <form className="quick-form edit-form" onSubmit={saveDoctorEdit}>
+            <strong>Edit doctor profile</strong>
+            <input aria-label="Doctor full name" value={doctorEditForm.fullName} onChange={e => setDoctorEditForm({ ...doctorEditForm, fullName: e.target.value })} required maxLength="120" />
+            <input aria-label="Doctor specialization" value={doctorEditForm.specialization} onChange={e => setDoctorEditForm({ ...doctorEditForm, specialization: e.target.value })} required maxLength="100" />
+            <select aria-label="Doctor department" value={doctorEditForm.department} onChange={e => setDoctorEditForm({ ...doctorEditForm, department: e.target.value })}>
+              <option value="">No department</option>
+              {departments.map(department => <option key={department._id} value={department.name}>{department.name}</option>)}
+              {doctorEditForm.department && !departments.some(department => department.name === doctorEditForm.department) && <option value={doctorEditForm.department}>{doctorEditForm.department} (inactive)</option>}
+            </select>
+            <div className="manage-actions">
+              <button type="submit">Save changes</button>
+              <button type="button" className="outline" onClick={() => setEditingDoctor("")}>Cancel</button>
+            </div>
+          </form>}
         </div>}
         {(user.role === "Admin" || user.role === "Receptionist" || user.role === "Patient") && <div className="card quick-card">
           <div className="section-head"><div><h2>Book appointment</h2><p className="muted">Select a patient, doctor and future time</p></div></div>
@@ -340,7 +431,25 @@ export default function App() {
             <input placeholder="Description (optional)" value={departmentForm.description} onChange={e => setDepartmentForm({ ...departmentForm, description: e.target.value })} />
             <button>Add department</button>
           </form>
-          <div className="department-list">{departments.map(d => <span className="pill" key={d._id}>{d.name}</span>)}</div>
+          <div className="manage-list" aria-label="Department management">
+            {departments.map(department => <div className="manage-row" key={department._id}>
+              <div className="manage-main"><strong>{department.name}</strong><small>{department.description || "No description"}</small></div>
+              <div className="manage-actions">
+                <button type="button" className="tiny outline" onClick={() => beginDepartmentEdit(department)}>Edit</button>
+                <button type="button" className="tiny outline" onClick={() => deactivateDepartment(department._id)}>Deactivate</button>
+              </div>
+            </div>)}
+            {!departments.length && <p className="empty">No active departments yet.</p>}
+          </div>
+          {editingDepartment && <form className="quick-form edit-form" onSubmit={saveDepartmentEdit}>
+            <strong>Edit department</strong>
+            <input aria-label="Department name" value={departmentEditForm.name} onChange={e => setDepartmentEditForm({ ...departmentEditForm, name: e.target.value })} required maxLength="100" />
+            <input aria-label="Department description" value={departmentEditForm.description} onChange={e => setDepartmentEditForm({ ...departmentEditForm, description: e.target.value })} maxLength="500" />
+            <div className="manage-actions">
+              <button type="submit">Save changes</button>
+              <button type="button" className="outline" onClick={() => setEditingDepartment("")}>Cancel</button>
+            </div>
+          </form>}
         </div>}
       </section>
       <section className="content-grid">
