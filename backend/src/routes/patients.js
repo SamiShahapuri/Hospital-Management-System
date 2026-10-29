@@ -1,7 +1,6 @@
 import { Router } from "express";
 import mongoose from "mongoose";
 import Patient from "../models/Patient.js";
-import User from "../models/User.js";
 import { authenticate, allowRoles } from "../middleware/auth.js";
 const router = Router();
 router.use(authenticate);
@@ -11,8 +10,7 @@ router.get("/", allowRoles("Admin", "Doctor", "Receptionist", "Patient"), async 
     const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const filter = q ? { fullName: { $regex: escaped, $options: "i" } } : {};
     if (req.user.role === "Patient") {
-      const account = await User.findById(req.user.id).select("email");
-      const ownProfile = account?.email ? await Patient.findOne({ email: account.email }) : null;
+      const ownProfile = await Patient.findOne({ linkedUser: req.user.id });
       if (!ownProfile) return res.json([]);
       filter._id = ownProfile._id;
     }
@@ -33,8 +31,7 @@ router.get("/:id", allowRoles("Admin", "Doctor", "Receptionist", "Patient"), asy
     const patient = await Patient.findById(req.params.id);
     if (!patient) return res.status(404).json({ message: "Patient not found" });
     if (req.user.role === "Patient") {
-      const account = await User.findById(req.user.id).select("email");
-      if (!account?.email || patient.email !== account.email) {
+      if (String(patient.linkedUser || "") !== String(req.user.id)) {
         return res.status(403).json({ message: "You can only view your own patient record" });
       }
     }
