@@ -46,3 +46,52 @@ test("doctor and appointment schemas include persistence and indexes", () => {
   assert.match(appointment, /ref: "Doctor"/);
   assert.match(appointment, /appointmentSchema\.index/);
 });
+
+test("admissions endpoints validate occupied beds and discharge only active admissions", () => {
+  const server = source("../src/server.js");
+  const model = source("../src/models/Admission.js");
+  const routes = source("../src/routes/admissions.js");
+  assert.match(server, /app\\.use\\("\\/api\\/admissions", admissionRoutes\\)/);
+  assert.match(model, /partialFilterExpression: \\{ status: "Admitted" \\}/);
+  assert.match(routes, /This bed is already occupied/);
+  assert.match(routes, /status: "Discharged", dischargedAt: new Date\\(\\)/);
+});
+
+test("clinical records persist diagnosis, treatment, author, and timestamp", () => {
+  const model = source("../src/models/Patient.js");
+  const routes = source("../src/routes/patients.js");
+  assert.match(model, /diagnosis:/);
+  assert.match(model, /treatment:/);
+  assert.match(model, /recordedBy:/);
+  assert.match(routes, /Enter a diagnosis, treatment, or clinical note/);
+  assert.match(routes, /recordedBy: req\\.user\\.id/);
+});
+
+test("billing API validates line items and supports payment state transitions", () => {
+  const server = source("../src/server.js");
+  const model = source("../src/models/Bill.js");
+  const routes = source("../src/routes/billing.js");
+  assert.match(server, /app\\.use\\("\\/api\\/billing", billingRoutes\\)/);
+  assert.match(model, /enum: \\["Unpaid", "Paid", "Cancelled"\\]/);
+  assert.match(routes, /lineTotal = Math\\.round/);
+  assert.match(routes, /status: "Paid", paidAt: new Date\\(\\)/);
+  assert.match(routes, /Only unpaid bills can be marked as paid/);
+});
+
+test("patient self-registration creates a profile and patient appointment access is scoped", () => {
+  const auth = source("../src/routes/auth.js");
+  const patients = source("../src/routes/patients.js");
+  const appointments = source("../src/routes/appointments.js");
+  assert.match(auth, /Patient\\.findOneAndUpdate/);
+  assert.match(patients, /You can only view your own patient record/);
+  assert.match(appointments, /You can only book appointments for your own patient profile/);
+  assert.match(appointments, /You can only cancel your own appointments/);
+});
+
+test("appointment database index prevents concurrent active-slot duplicates", () => {
+  const model = source("../src/models/Appointment.js");
+  const routes = source("../src/routes/appointments.js");
+  assert.match(model, /unique: true, partialFilterExpression: \\{ status: "Booked" \\}/);
+  assert.match(routes, /error\\.code === 11000/);
+  assert.match(routes, /timeZone: hospitalTimeZone/);
+});
