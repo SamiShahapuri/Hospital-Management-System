@@ -6,6 +6,5 @@ const departmentSchema = new mongoose.Schema({
   active: { type: Boolean, default: true }
 }, { timestamps: true });
 
-departmentSchema.index({ name: 1 }, { unique: true });
 
 export default mongoose.model("Department", departmentSchema);
