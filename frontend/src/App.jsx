@@ -217,7 +217,7 @@ export default function App() {
           <form className="quick-form" onSubmit={bookAppointment}>
             <select value={appointmentForm.patient} onChange={e => setAppointmentForm({ ...appointmentForm, patient: e.target.value })} required><option value="">Choose patient</option>{patients.map(p => <option key={p._id} value={p._id}>{p.fullName}</option>)}</select>
             <select value={appointmentForm.doctor} onChange={e => setAppointmentForm({ ...appointmentForm, doctor: e.target.value })} required><option value="">Choose doctor</option>{doctors.map(d => <option key={d._id} value={d._id}>{d.fullName} — {d.specialization}</option>)}</select>
-            <input type="datetime-local" value={appointmentForm.scheduledAt} onChange={e => setAppointmentForm({ ...appointmentForm, scheduledAt: e.target.value })} required />
+            <input type="datetime-local" min={new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16)} value={appointmentForm.scheduledAt} onChange={e => setAppointmentForm({ ...appointmentForm, scheduledAt: e.target.value })} required />
             <input placeholder="Reason (optional)" value={appointmentForm.reason} onChange={e => setAppointmentForm({ ...appointmentForm, reason: e.target.value })} />
             <button>Book appointment</button>
           </form>
