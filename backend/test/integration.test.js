@@ -140,6 +140,19 @@ test("MongoDB-backed API workflows: authentication, records, appointments, admis
   assert.equal(doctor.status, 201, JSON.stringify(doctor.data));
   const doctorId = doctor.data._id;
 
+  const renamedDepartmentName = `${departmentName} Renamed`;
+  const renamedDepartment = await request(`/departments/${department.data._id}`, {
+    token: admin.token, method: "PATCH", body: { name: renamedDepartmentName }
+  });
+  assert.equal(renamedDepartment.status, 200, JSON.stringify(renamedDepartment.data));
+  const doctorAfterRename = await request(`/doctors?q=${encodeURIComponent(`Dr Integration ${suffix}`)}`, { token: admin.token });
+  assert.equal(doctorAfterRename.status, 200);
+  assert.equal(doctorAfterRename.data[0]?.department, renamedDepartmentName);
+  const departmentWithActiveDoctor = await request(`/departments/${department.data._id}`, {
+    token: admin.token, method: "DELETE"
+  });
+  assert.equal(departmentWithActiveDoctor.status, 409);
+
   const slot1 = indiaDate(7, 10, 30);
   const slot2 = indiaDate(8, 11, 30);
   const slot3 = indiaDate(9, 12, 30);
@@ -254,5 +267,16 @@ test("MongoDB-backed API workflows: authentication, records, appointments, admis
   const ownAppointments = await request("/appointments", { token: patientUser.token });
   assert.ok(ownAppointments.data.every(appointment => String(appointment.patient?._id || appointment.patient) === ownProfileId));
 
-  console.log("Integration workflow completed: auth, role controls, patient persistence, doctor/department, appointments, admissions, clinical records, billing, reminders, and reports.");
+  const deactivatedDoctor = await request(`/doctors/${doctorId}`, { token: admin.token, method: "DELETE" });
+  assert.equal(deactivatedDoctor.status, 200);
+  const deactivatedDepartment = await request(`/departments/${department.data._id}`, { token: admin.token, method: "DELETE" });
+  assert.equal(deactivatedDepartment.status, 200);
+  const activeDoctorSearch = await request(`/doctors?q=${encodeURIComponent(`Dr Integration ${suffix}`)}`, { token: admin.token });
+  assert.equal(activeDoctorSearch.status, 200);
+  assert.equal(activeDoctorSearch.data.length, 0);
+  const activeDepartments = await request("/departments", { token: admin.token });
+  assert.equal(activeDepartments.status, 200);
+  assert.ok(!activeDepartments.data.some(item => item._id === department.data._id));
+
+  console.log("Integration workflow completed: auth, role controls, patient persistence, doctor/department CRUD, appointments, admissions, clinical records, billing, reminders, and reports.");
 });
