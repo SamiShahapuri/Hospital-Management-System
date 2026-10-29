@@ -51,47 +51,47 @@ test("admissions endpoints validate occupied beds and discharge only active admi
   const server = source("../src/server.js");
   const model = source("../src/models/Admission.js");
   const routes = source("../src/routes/admissions.js");
-  assert.match(server, /app\\.use\\("\\/api\\/admissions", admissionRoutes\\)/);
-  assert.match(model, /partialFilterExpression: \\{ status: "Admitted" \\}/);
-  assert.match(routes, /This bed is already occupied/);
-  assert.match(routes, /status: "Discharged", dischargedAt: new Date\\(\\)/);
+  assert.ok(server.includes('app.use("/api/admissions", admissionRoutes)'));
+  assert.ok(model.includes('partialFilterExpression: { status: "Admitted" }'));
+  assert.ok(routes.includes("This bed is already occupied"));
+  assert.ok(routes.includes('status: "Discharged", dischargedAt: new Date()'));
 });
 
 test("clinical records persist diagnosis, treatment, author, and timestamp", () => {
   const model = source("../src/models/Patient.js");
   const routes = source("../src/routes/patients.js");
-  assert.match(model, /diagnosis:/);
-  assert.match(model, /treatment:/);
-  assert.match(model, /recordedBy:/);
-  assert.match(routes, /Enter a diagnosis, treatment, or clinical note/);
-  assert.match(routes, /recordedBy: req\\.user\\.id/);
+  assert.ok(model.includes("diagnosis:"));
+  assert.ok(model.includes("treatment:"));
+  assert.ok(model.includes("recordedBy:"));
+  assert.ok(routes.includes("Enter a diagnosis, treatment, or clinical note"));
+  assert.ok(routes.includes("recordedBy: req.user.id"));
 });
 
 test("billing API validates line items and supports payment state transitions", () => {
   const server = source("../src/server.js");
   const model = source("../src/models/Bill.js");
   const routes = source("../src/routes/billing.js");
-  assert.match(server, /app\\.use\\("\\/api\\/billing", billingRoutes\\)/);
-  assert.match(model, /enum: \\["Unpaid", "Paid", "Cancelled"\\]/);
-  assert.match(routes, /lineTotal = Math\\.round/);
-  assert.match(routes, /status: "Paid", paidAt: new Date\\(\\)/);
-  assert.match(routes, /Only unpaid bills can be marked as paid/);
+  assert.ok(server.includes('app.use("/api/billing", billingRoutes)'));
+  assert.ok(model.includes('enum: ["Unpaid", "Paid", "Cancelled"]'));
+  assert.ok(routes.includes("lineTotal = Math.round"));
+  assert.ok(routes.includes('status: "Paid", paidAt: new Date()'));
+  assert.ok(routes.includes("Only unpaid bills can be marked as paid"));
 });
 
 test("patient self-registration creates a profile and patient appointment access is scoped", () => {
   const auth = source("../src/routes/auth.js");
   const patients = source("../src/routes/patients.js");
   const appointments = source("../src/routes/appointments.js");
-  assert.match(auth, /Patient\\.findOneAndUpdate/);
-  assert.match(patients, /You can only view your own patient record/);
-  assert.match(appointments, /You can only book appointments for your own patient profile/);
-  assert.match(appointments, /You can only cancel your own appointments/);
+  assert.ok(auth.includes("Patient.findOneAndUpdate"));
+  assert.ok(patients.includes("You can only view your own patient record"));
+  assert.ok(appointments.includes("You can only book appointments for your own patient profile"));
+  assert.ok(appointments.includes("You can only cancel your own appointments"));
 });
 
 test("appointment database index prevents concurrent active-slot duplicates", () => {
   const model = source("../src/models/Appointment.js");
   const routes = source("../src/routes/appointments.js");
-  assert.match(model, /unique: true, partialFilterExpression: \\{ status: "Booked" \\}/);
-  assert.match(routes, /error\\.code === 11000/);
-  assert.match(routes, /timeZone: hospitalTimeZone/);
+  assert.ok(model.includes('unique: true, partialFilterExpression: { status: "Booked" }'));
+  assert.ok(routes.includes("error.code === 11000"));
+  assert.ok(routes.includes("timeZone: hospitalTimeZone"));
 });
