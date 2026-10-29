@@ -12,3 +12,11 @@ input:focus,select:focus,textarea:focus{border-color:#55a69c;box-shadow:0 0 0 3p
 .status.unpaid{background:#fff5dc;color:#9a6b14}
 .status.discharged{background:#edf1f5;color:#627487}
 @media(max-width:420px){.inline-fields{grid-template-columns:1fr}}
+
+.reschedule-form{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:end;gap:8px;padding:12px;margin:8px 0 14px;background:#f8fbfc;border:1px solid #e7edf2;border-radius:10px}
+.reschedule-form label{display:grid;gap:6px;font-size:11px;color:#69798a}
+.reschedule-form input{font-size:12px}
+.register-toggle{margin-top:12px;width:100%}
+html{scroll-behavior:smooth;scroll-padding-top:18px}
+[id]{scroll-margin-top:18px}
+@media(max-width:650px){.reschedule-form{grid-template-columns:1fr}.reschedule-form button{width:100%}}
