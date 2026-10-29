@@ -25,3 +25,16 @@ html{scroll-behavior:smooth;scroll-padding-top:18px}
 .report-grid>div{display:grid;gap:4px;padding:12px;background:#f8fbfc;border:1px solid #edf1f4;border-radius:10px}
 .report-grid small{font-size:10px;color:#8795a4}
 .report-grid strong{font-family:Manrope,sans-serif;font-size:18px;color:#1d2b3a;overflow-wrap:anywhere}
+
+
+/* Inline management controls for doctor and department records. */
+.manage-list{display:grid;gap:2px;margin-top:14px;border-top:1px solid #edf0f4}
+.manage-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid #f0f3f6;min-width:0}
+.manage-main{display:grid;gap:4px;min-width:0}
+.manage-main strong{font-size:11px;color:#334557;overflow-wrap:anywhere}
+.manage-main small{font-size:10px;color:#8795a4;overflow-wrap:anywhere}
+.manage-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.manage-actions .tiny{font-size:10px;padding:6px 8px}
+.edit-form{padding:12px;border:1px solid #e7edf2;background:#f8fbfc;border-radius:10px;margin-top:12px}
+.edit-form>strong{font-family:Manrope,sans-serif;font-size:12px;color:#334557}
+@media(max-width:420px){.manage-row{align-items:flex-start;flex-direction:column}.manage-actions{width:100%}}
