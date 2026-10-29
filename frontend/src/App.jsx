@@ -170,12 +170,20 @@ export default function App() {
   if (!user) return <main className="login-wrap"><section className="login card">
     <div className="logo">✚</div><p className="eyebrow">SPRINT 1 MVP</p><h1>Hospital Management</h1>
     <p className="muted">Sign in to manage patients, doctors and appointments.</p>
-    <form onSubmit={submitLogin} className="stack">
+    {registerMode ? <form onSubmit={submitRegistration} className="stack">
+      <label>Full name<input value={registrationForm.name} onChange={e => setRegistrationForm({ ...registrationForm, name: e.target.value })} maxLength="100" required /></label>
+      <label>Email<input type="email" value={registrationForm.email} onChange={e => setRegistrationForm({ ...registrationForm, email: e.target.value })} required /></label>
+      <label>Password (at least 8 characters)<input type="password" value={registrationForm.password} onChange={e => setRegistrationForm({ ...registrationForm, password: e.target.value })} minLength="8" required /></label>
+      <button>Create patient account</button>
+    </form> : <form onSubmit={submitLogin} className="stack">
       <label>Email<input type="email" value={login.email} onChange={e => setLogin({ ...login, email: e.target.value })} required /></label>
       <label>Password<input type="password" value={login.password} onChange={e => setLogin({ ...login, password: e.target.value })} required /></label>
       <button>Sign in</button>
-    </form>
-    <p className="hint">Demo accounts are created with <code>npm run seed</code> in the backend folder.</p>
+    </form>}
+    <button type="button" className="outline register-toggle" onClick={() => { setRegisterMode(!registerMode); setNotice(""); }}>
+      {registerMode ? "Back to sign in" : "Create a patient account"}
+    </button>
+    <p className="hint">Demo staff accounts are created with <code>npm run seed</code>. Patient accounts can be created here.</p>
     {notice && <p className="notice">{notice}</p>}
   </section></main>;
 
