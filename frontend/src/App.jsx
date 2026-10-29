@@ -4,7 +4,10 @@ import { api, saveSession, clearSession } from "./api";
 const initialLogin = { email: "", password: "" };
 export default function App() {
   const [user, setUser] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("hms_user")); } catch { return null; }
+    try {
+      const savedUser = JSON.parse(localStorage.getItem("hms_user"));
+      return localStorage.getItem("hms_token") && typeof savedUser?.name === "string" ? savedUser : null;
+    } catch { return null; }
   });
   const [login, setLogin] = useState(initialLogin);
   const [registerMode, setRegisterMode] = useState(false);
@@ -57,6 +60,16 @@ export default function App() {
       if (e.status === 401) { clearSession(); setUser(null); }
     }
   }
+  useEffect(() => {
+    const handleSessionExpired = () => {
+      clearSession();
+      setUser(null);
+      setNotice("Your session expired. Please sign in again.");
+    };
+    window.addEventListener("hms:session-expired", handleSessionExpired);
+    return () => window.removeEventListener("hms:session-expired", handleSessionExpired);
+  }, []);
+
   useEffect(() => { if (user) refresh(); }, [user]);
 
   async function submitLogin(e) {
@@ -324,7 +337,7 @@ export default function App() {
       <div className="sidebar-bottom"><div className="avatar">{user.name?.[0] || "U"}</div><div><strong>{user.name}</strong><small>{user.role}</small></div><button className="quiet" onClick={() => { clearSession(); setUser(null); }}>↪</button></div>
     </aside>
     <main className="main">
-      <header className="topbar"><div><p className="eyebrow">HOSPITAL / OVERVIEW</p><h1>Good day, {user.name.split(" ")[0]}</h1><p className="muted">Here’s the current snapshot of your hospital.</p></div><div className="top-right"><span className="live-dot"></span> Sprint 2 <button className="outline" onClick={refresh}>Refresh data</button></div></header>
+      <header className="topbar"><div><p className="eyebrow">HOSPITAL / OVERVIEW</p><h1>Good day, {user.name?.split(" ")[0] || "there"}</h1><p className="muted">Here’s the current snapshot of your hospital.</p></div><div className="top-right"><span className="live-dot"></span> Sprint 2 <button className="outline" onClick={refresh}>Refresh data</button></div></header>
       {notice && <div className="notice">{notice}</div>}
       <section className="metrics" id="overview">
         <Metric label="Registered patients" value={patients.length} note="Patient records" icon="♙"/>
