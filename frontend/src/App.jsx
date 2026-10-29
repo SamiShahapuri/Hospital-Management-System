@@ -72,7 +72,7 @@ export default function App() {
   async function addDoctor(e) {
     e.preventDefault();
     try {
-      await api("/doctors", { method: "POST", body: JSON.stringify({ ...doctorForm, department: doctorForm.department }) });
+      await api("/doctors", { method: "POST", body: JSON.stringify({ ...doctorForm, availability: [1, 2, 3, 4, 5].map(dayOfWeek => ({ dayOfWeek, startTime: "09:00", endTime: "17:00" })) }) });
       setDoctorForm({ fullName: "", specialization: "", department: "" });
       setNotice("Doctor profile created."); await refresh();
     } catch (e) { setNotice(e.message); }
@@ -168,7 +168,7 @@ export default function App() {
   }
 
   if (!user) return <main className="login-wrap"><section className="login card">
-    <div className="logo">✚</div><p className="eyebrow">SPRINT 1 MVP</p><h1>Hospital Management</h1>
+    <div className="logo">✚</div><p className="eyebrow">SPRINT 2 DEMO</p><h1>Hospital Management</h1>
     <p className="muted">Sign in to manage patients, doctors and appointments.</p>
     {registerMode ? <form onSubmit={submitRegistration} className="stack">
       <label>Full name<input value={registrationForm.name} onChange={e => setRegistrationForm({ ...registrationForm, name: e.target.value })} maxLength="100" required /></label>
@@ -190,13 +190,13 @@ export default function App() {
   const filteredPatients = patients.filter(p => p.fullName.toLowerCase().includes(search.toLowerCase()));
   return <div className="app-shell">
     <aside className="sidebar"><div className="brand"><span>✚</span><div><strong>CarePoint</strong><small>Hospital System</small></div></div>
-      <p className="nav-label">WORKSPACE</p><a className="active">Overview</a><a>Patients</a><a>Appointments</a><a>Admissions</a>
+      <p className="nav-label">WORKSPACE</p><a className="active" href="#overview">Overview</a><a href="#patients">Patients</a><a href="#appointments">Appointments</a><a href="#admissions">Admissions</a>
       <div className="sidebar-bottom"><div className="avatar">{user.name?.[0] || "U"}</div><div><strong>{user.name}</strong><small>{user.role}</small></div><button className="quiet" onClick={() => { clearSession(); setUser(null); }}>↪</button></div>
     </aside>
     <main className="main">
-      <header className="topbar"><div><p className="eyebrow">HOSPITAL / OVERVIEW</p><h1>Good day, {user.name.split(" ")[0]}</h1><p className="muted">Here’s the current snapshot of your hospital.</p></div><div className="top-right"><span className="live-dot"></span> Sprint 1 Demo <button className="outline" onClick={refresh}>Refresh data</button></div></header>
+      <header className="topbar"><div><p className="eyebrow">HOSPITAL / OVERVIEW</p><h1>Good day, {user.name.split(" ")[0]}</h1><p className="muted">Here’s the current snapshot of your hospital.</p></div><div className="top-right"><span className="live-dot"></span> Sprint 2 <button className="outline" onClick={refresh}>Refresh data</button></div></header>
       {notice && <div className="notice">{notice}</div>}
-      <section className="metrics">
+      <section className="metrics" id="overview">
         <Metric label="Registered patients" value={patients.length} note="Patient records" icon="♙"/>
         <Metric label="Doctors" value={doctors.length} note="Clinical team" icon="✚"/>
         <Metric label="Appointments" value={appointments.filter(a => a.status === "Booked").length} note="Currently booked" icon="▦"/>
@@ -204,7 +204,7 @@ export default function App() {
       </section>
       <section className="quick-actions">
         {(user.role === "Admin" || user.role === "Receptionist") && <div className="card quick-card">
-          <div className="section-head"><div><h2>Add doctor</h2><p className="muted">Doctor profile for scheduling</p></div></div>
+          <div className="section-head"><div><h2>Add doctor</h2><p className="muted">Default availability: weekdays, 09:00–17:00</p></div></div>
           <form className="quick-form" onSubmit={addDoctor}>
             <input placeholder="Doctor full name" value={doctorForm.fullName} onChange={e => setDoctorForm({ ...doctorForm, fullName: e.target.value })} required />
             <input placeholder="Specialization" value={doctorForm.specialization} onChange={e => setDoctorForm({ ...doctorForm, specialization: e.target.value })} required />
@@ -270,7 +270,7 @@ export default function App() {
         </div>}
       </section>
       <section className="content-grid">
-        <div className="card patients-card"><div className="section-head"><div><h2>Patient directory</h2><p className="muted">Register and search patient records</p></div><span className="pill">{patients.length} records</span></div>
+        <div className="card patients-card" id="patients"><div className="section-head"><div><h2>Patient directory</h2><p className="muted">Register and search patient records</p></div><span className="pill">{patients.length} records</span></div>
           {(user.role === "Admin" || user.role === "Receptionist") && <form className="patient-form" onSubmit={registerPatient}>
             <input placeholder="Patient full name" value={form.fullName} onChange={e => setForm({ ...form, fullName: e.target.value })} required />
             <input placeholder="Phone" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })}/>
@@ -292,11 +292,11 @@ export default function App() {
           </tbody></table></div>
         </div>
         <div className="right-column">
-          <div className="card"><div className="section-head"><div><h2>Appointments</h2><p className="muted">Upcoming schedule</p></div><span className="icon-box">▦</span></div>
+          <div className="card" id="appointments"><div className="section-head"><div><h2>Appointments</h2><p className="muted">Upcoming schedule</p></div><span className="icon-box">▦</span></div>
             {appointments.slice(0, 5).map(a => <div className="list-row" key={a._id}><div className="date-box"><strong>{new Date(a.scheduledAt).getDate()}</strong><small>{new Date(a.scheduledAt).toLocaleString("en", { month: "short" })}</small></div><div className="list-main"><strong>{a.patient?.fullName || "Patient"}</strong><small>{a.doctor?.fullName || "Doctor"} · {new Date(a.scheduledAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</small></div><span className={`status ${a.status.toLowerCase()}`}>{a.status}</span>{a.status === "Booked" && <button className="tiny outline" onClick={() => cancelAppointment(a._id)}>Cancel</button>}</div>)}
             {!appointments.length && <p className="empty">No appointments yet.</p>}
           </div>
-          <div className="card"><div className="section-head"><div><h2>Admissions & beds</h2><p className="muted">Inpatient status</p></div><span className="icon-box">▤</span></div>
+          <div className="card" id="admissions"><div className="section-head"><div><h2>Admissions & beds</h2><p className="muted">Inpatient status</p></div><span className="icon-box">▤</span></div>
             {admissions.filter(a => a.status === "Admitted").slice(0, 4).map(a => <div className="list-row" key={a._id}><div className="bed-icon">▤</div><div className="list-main"><strong>{a.patient?.fullName || "Patient"}</strong><small>Room {a.roomNumber} · Bed {a.bedNumber}</small></div><button className="tiny outline" onClick={() => discharge(a._id)}>Discharge</button></div>)}
             {!admissions.some(a => a.status === "Admitted") && <p className="empty">No active admissions.</p>}
           </div>
@@ -322,7 +322,7 @@ export default function App() {
           </div>}
         </div>
       </section>
-      <footer>CarePoint HMS · Academic Sprint 1 MVP <span>Demo data only · Do not enter real patient information</span></footer>
+      <footer>CarePoint HMS · Sprint 2 <span>Demo data only · Do not enter real patient information</span></footer>
     </main>
   </div>;
 }
