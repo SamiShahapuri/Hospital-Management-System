@@ -39,6 +39,13 @@ async function main() {
     role: "Receptionist"
   });
 
+  await upsertUser({
+    name: "Demo Doctor",
+    email: process.env.DEMO_DOCTOR_EMAIL || "doctor@example.com",
+    password: process.env.DEMO_DOCTOR_PASSWORD || "DoctorDemo123!",
+    role: "Doctor"
+  });
+
   const departmentSpecs = [
     { name: "Cardiology", description: "Heart and cardiovascular care" },
     { name: "General Medicine", description: "Primary and general medical care" },
@@ -100,6 +107,7 @@ async function main() {
   console.log("Demo data is ready.");
   console.log("Admin: admin@example.com / AdminDemo123!");
   console.log("Receptionist: reception@example.com / ReceptionDemo123!");
+  console.log("Doctor: doctor@example.com / DoctorDemo123!");
   console.log("Use these credentials only in a local demo environment. Change them before any deployment.");
 }
 

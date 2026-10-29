@@ -1,5 +1,4 @@
-
-name: Sprint 1 CI
+name: Hospital Management System CI
 
 on:
   push:
@@ -7,9 +6,29 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
   backend-check:
+    name: Backend syntax, unit and API integration tests
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      MONGODB_URI: mongodb://127.0.0.1:27017/hms_ci_test
+      JWT_SECRET: ci-only-secret-not-for-deployment
+      HOSPITAL_TIME_ZONE: Asia/Kolkata
+      CLIENT_ORIGIN: http://localhost:5173
+    services:
+      mongodb:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval \"db.adminCommand('ping').ok ? quit(0) : quit(1)\""
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
 
@@ -19,7 +38,7 @@ jobs:
 
       - name: Install backend dependencies
         working-directory: backend
-        run: npm install
+        run: npm install --no-audit --no-fund
 
       - name: Check backend JavaScript syntax
         working-directory: backend
@@ -27,12 +46,21 @@ jobs:
           find src test -name "*.js" -print0 | xargs -0 -n1 node --check
           node --check seed.js
 
-      - name: Run backend tests
+      - name: Run backend unit and source-wiring tests
         working-directory: backend
         run: npm test
 
+      - name: Run MongoDB-backed API integration tests
+        working-directory: backend
+        env:
+          HMS_INTEGRATION_TESTS: "1"
+          HMS_TEST_PORT: "5100"
+        run: npm run test:integration
+
   frontend-build:
+    name: Frontend production build
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 
@@ -42,7 +70,7 @@ jobs:
 
       - name: Install frontend dependencies
         working-directory: frontend
-        run: npm install
+        run: npm install --no-audit --no-fund
 
       - name: Build frontend
         working-directory: frontend

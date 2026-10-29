@@ -53,16 +53,19 @@ Taken from the [SRS](Documents/SRSdocument.pdf):
 
 ```
 Hospital-Management-System/
-├── Documents/
-│   ├── SRSdocument.pdf               # Software Requirements Specification (FR & NFR)
-│   ├── testPlanDocument.pdf          # Unit, integration and system test cases
-│   ├── useCaseDiagram.jpeg            # Use case diagram (actors and interactions)
-│   ├── useCaseFlowDocumentation.pdf  # Main, alternate and exception flows
-│   └── README.md                      # Notes on the documents
 ├── .github/
-│   └── ISSUE_TEMPLATE/
-│       └── user_story.md              # Template for backlog items
-├── backlog.csv                        # Product backlog with story points and sprint plan
+│   └── workflows/
+│       └── ci.yml
+├── Documents/
+│   ├── SRSdocument.pdf
+│   ├── testPlanDocument.pdf
+│   ├── useCaseDiagram.jpeg
+│   ├── useCaseFlowDocumentation.pdf
+│   └── README.md
+├── backend/
+├── frontend/
+├── VideoDemo/
+│   └── login.mp4
 └── README.md
 ```
 
@@ -72,7 +75,7 @@ Hospital-Management-System/
 
 We manage the backlog with **GitHub Issues** and a **GitHub Project board**.
 
-- **Backlog:** 34 items created from the FR and NFR in the SRS (see [`backlog.csv`](backlog.csv)).
+- **Backlog:** tracked as GitHub Issues and the [project board](https://github.com/users/SamiShahapuri/projects/3). The CSV mentioned in earlier planning notes is not present in the current repository.
 - **Story points:** Fibonacci scale (1, 2, 3, 5, 8) on each item.
 - **Sprints:** tracked using milestones (`Sprint 1`, `Sprint 2`) and the Project's Sprint field.
 - **Labels:** `FR`, `NFR`, `story`, `task`, `deliverable`, `sprint-1`, `sprint-2`, `SP-<points>`.
@@ -123,25 +126,25 @@ npm install
 npm run dev
 ```
 
-The frontend defaults to the API at `http://localhost:5000/api`. Configure `VITE_API_URL` in a frontend `.env` file if your API runs elsewhere. The backend uses `HOSPITAL_TIME_ZONE` for scheduling and defaults to `Asia/Kolkata`. Use demo data only; do not enter real patient information. The included seed credentials and fallback JWT secret are for local demonstrations only and must be replaced before any deployment.
+The frontend defaults to the API at `http://localhost:5000/api`. Configure `VITE_API_URL` in a frontend `.env` file if your API runs elsewhere. The backend uses `HOSPITAL_TIME_ZONE` for scheduling and defaults to `Asia/Kolkata`. Use demo data only; do not enter real patient information. The seeded local demo accounts are Admin `admin@example.com` / `AdminDemo123!`, Receptionist `reception@example.com` / `ReceptionDemo123!`, and Doctor `doctor@example.com` / `DoctorDemo123!`. These credentials and the fallback JWT secret are for local demonstrations only and must be replaced before any deployment. On Windows PowerShell, use `Copy-Item .env.example .env` if `cp` is not available.
 
 ## 🧪 Testing
 
-Test cases for each module (Login, Patient Records, Doctors, Appointments, Admission/Discharge, Billing, Notifications, Reports) are in [`Documents/testPlanDocument.pdf`](Documents/testPlanDocument.docx).
+The submitted test cases are in [`Documents/testPlanDocument.pdf`](Documents/testPlanDocument.pdf). Automated backend checks run with `cd backend && npm test`. CI also runs the actual API against a dedicated MongoDB service, checks JavaScript syntax, and builds the frontend. To run the HTTP integration suite locally, make sure MongoDB is running and point `MONGODB_URI` at a separate test database (not your working app database), set `HMS_INTEGRATION_TESTS=1`, then run `npm run test:integration` from `backend`. In PowerShell, for example: `$env:MONGODB_URI='mongodb://127.0.0.1:27017/hms_integration_test'; $env:HMS_INTEGRATION_TESTS='1'; npm.cmd run test:integration`. See [`Documents/FINAL_VERIFICATION_CHECKLIST.md`](Documents/FINAL_VERIFICATION_CHECKLIST.md) for the remaining manual workflow checks.
 
 ## 🎥 Demo Videos
 
 | Sprint | Video |
 |---|---|
-| Sprint 1 (1 min) | _add link/file here after Sprint 1_ |
-| Sprint 2 (2 min) | _add link/file here after Sprint 2_ |
+| Login demo | [`VideoDemo/login.mp4`](VideoDemo/login.mp4) |
+| Other workflows | Record and add patient, doctor, appointment, admission, and billing demos before final submission. |
 
 ## 📄 Documentation
 
 | Document | Purpose |
 |---|---|
-| [SRS](Documents/SRSdocument.docx) | Functional and non-functional requirements |
-| [Test Plan](Documents/testPlanDocument.docx) | Test cases per module |
+| [SRS](Documents/SRSdocument.pdf) | Functional and non-functional requirements |
+| [Test Plan](Documents/testPlanDocument.pdf) | Test cases per module |
 | [Use Case Diagram](Documents/useCaseDiagram.jpeg) | Actors and their interactions with the system |
 | [Use Case Flow](Documents/useCaseFlowDocumentation.pdf) | Step-by-step flows for each use case |
 | SAD | [System Architecture Document](Documents/README.md) — verify against the originally submitted SAD before final submission |

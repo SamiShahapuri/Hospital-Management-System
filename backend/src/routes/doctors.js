@@ -1,6 +1,7 @@
 import { Router } from "express";
 import mongoose from "mongoose";
 import Doctor from "../models/Doctor.js";
+import Department from "../models/Department.js";
 import { authenticate, allowRoles } from "../middleware/auth.js";
 
 const router = Router();
@@ -10,6 +11,7 @@ function validAvailability(availability) {
   if (availability === undefined) return true;
   if (!Array.isArray(availability)) return false;
   return availability.every((slot) =>
+    slot && typeof slot === "object" &&
     Number.isInteger(slot.dayOfWeek) &&
     slot.dayOfWeek >= 0 && slot.dayOfWeek <= 6 &&
     /^([01]\d|2[0-3]):[0-5]\d$/.test(slot.startTime || "") &&
@@ -42,6 +44,9 @@ router.post("/", allowRoles("Admin", "Receptionist"), async (req, res, next) => 
     if (!validAvailability(req.body.availability)) {
       return res.status(400).json({ message: "Availability must contain valid weekdays and start/end times" });
     }
+    if (department && !(await Department.exists({ name: department, active: true }))) {
+      return res.status(400).json({ message: "Choose an existing active department" });
+    }
     const doctor = await Doctor.create({
       fullName, specialization, department,
       availability: req.body.availability || []
@@ -58,11 +63,19 @@ router.patch("/:id", allowRoles("Admin", "Receptionist"), async (req, res, next)
     const updates = {};
     for (const field of ["fullName", "specialization", "department"]) {
       if (field in req.body) {
-        if (typeof req.body[field] !== "string" || !req.body[field].trim()) {
+        if (typeof req.body[field] !== "string") {
+          return res.status(400).json({ message: `${field} must be text` });
+        }
+        const value = req.body[field].trim();
+        if (field !== "department" && !value) {
           return res.status(400).json({ message: `${field} must be a non-empty string` });
         }
-        updates[field] = req.body[field].trim();
+        updates[field] = value;
       }
+    }
+    if ("department" in updates && updates.department &&
+        !(await Department.exists({ name: updates.department, active: true }))) {
+      return res.status(400).json({ message: "Choose an existing active department" });
     }
     if ("availability" in req.body) {
       if (!validAvailability(req.body.availability)) {

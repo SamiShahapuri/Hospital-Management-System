@@ -31,7 +31,8 @@ test("department endpoints validate names and handle duplicate departments", () 
 
 test("appointment endpoints validate future times and prevent duplicate booked slots", () => {
   const routes = source("../src/routes/appointments.js");
-  assert.match(routes, /date <= new Date\(\)/);
+  assert.match(routes, /parseFutureDate\(scheduledAt\)/);
+  assert.match(routes, /parseFutureDate\(req\.body\.scheduledAt\)/);
   assert.match(routes, /Doctor already has an appointment at this time/);
   assert.match(routes, /appointment\.status = "Cancelled"/);
   assert.match(routes, /Only booked appointments can be cancelled/);
@@ -73,7 +74,9 @@ test("billing API validates line items and supports payment state transitions", 
   const routes = source("../src/routes/billing.js");
   assert.ok(server.includes('app.use("/api/billing", billingRoutes)'));
   assert.ok(model.includes('enum: ["Unpaid", "Paid", "Cancelled"]'));
-  assert.ok(routes.includes("lineTotal = Math.round"));
+  assert.ok(routes.includes("normalizeBillItems(items)"));
+  const validation = source("../src/utils/validation.js");
+  assert.ok(validation.includes("lineTotal = Math.round"));
   assert.ok(routes.includes('status: "Paid", paidAt: new Date()'));
   assert.ok(routes.includes("Only unpaid bills can be marked as paid"));
 });
@@ -82,7 +85,7 @@ test("patient self-registration creates a profile and patient appointment access
   const auth = source("../src/routes/auth.js");
   const patients = source("../src/routes/patients.js");
   const appointments = source("../src/routes/appointments.js");
-  assert.ok(auth.includes("Patient.create({ fullName: name.trim(), email: normalizedEmail, linkedUser: user._id })"));
+  assert.ok(auth.includes("Patient.create({ fullName: name, email, linkedUser: user._id })"));
   assert.ok(patients.includes("You can only view your own patient record"));
   assert.ok(appointments.includes("You can only book appointments for your own patient profile"));
   assert.ok(appointments.includes("You can only cancel your own appointments"));

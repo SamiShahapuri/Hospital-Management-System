@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
 import { api, saveSession, clearSession } from "./api";
 
-const initialLogin = { email: "admin@example.com", password: "AdminDemo123!" };
+const initialLogin = { email: "", password: "" };
 export default function App() {
   const [user, setUser] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("hms_user")); } catch { return null; }
+    try {
+      const savedUser = JSON.parse(localStorage.getItem("hms_user"));
+      return localStorage.getItem("hms_token") && typeof savedUser?.name === "string" ? savedUser : null;
+    } catch { return null; }
   });
   const [login, setLogin] = useState(initialLogin);
   const [registerMode, setRegisterMode] = useState(false);
@@ -29,6 +32,12 @@ export default function App() {
   const [doctorForm, setDoctorForm] = useState({ fullName: "", specialization: "", department: "" });
   const [departmentForm, setDepartmentForm] = useState({ name: "", description: "" });
   const [departments, setDepartments] = useState([]);
+  const [selectedPatient, setSelectedPatient] = useState(null);
+  const [loadingPatientDetails, setLoadingPatientDetails] = useState(false);
+  const [editingDoctor, setEditingDoctor] = useState("");
+  const [doctorEditForm, setDoctorEditForm] = useState({ fullName: "", specialization: "", department: "" });
+  const [editingDepartment, setEditingDepartment] = useState("");
+  const [departmentEditForm, setDepartmentEditForm] = useState({ name: "", description: "" });
 
   async function refresh() {
     try {
@@ -44,12 +53,26 @@ export default function App() {
         canSeeReports ? api("/reports/summary") : Promise.resolve(null)
       ]);
       setPatients(p); setDoctors(d); setAppointments(a); setAdmissions(ad); setDepartments(depts);
+      if (user?.role === "Patient" && p[0]?._id) {
+        setAppointmentForm(current => ({ ...current, patient: p[0]._id }));
+      }
       setBills(b); setNotifications(n); setReportSummary(report); setNotice("");
     } catch (e) {
       setNotice(e.message);
-      if (e.status === 401) { clearSession(); setUser(null); }
+      if (e.status === 401) { clearSession(); setUser(null); setSelectedPatient(null); }
     }
   }
+  useEffect(() => {
+    const handleSessionExpired = () => {
+      clearSession();
+      setUser(null);
+      setSelectedPatient(null);
+      setNotice("Your session expired. Please sign in again.");
+    };
+    window.addEventListener("hms:session-expired", handleSessionExpired);
+    return () => window.removeEventListener("hms:session-expired", handleSessionExpired);
+  }, []);
+
   useEffect(() => { if (user) refresh(); }, [user]);
 
   async function submitLogin(e) {
@@ -68,6 +91,19 @@ export default function App() {
       setRegisterMode(false);
       setNotice("Patient account created. Sign in to continue.");
     } catch (e) { setNotice(e.message); }
+  }
+
+  async function viewPatientDetails(id) {
+    setLoadingPatientDetails(true);
+    try {
+      const patient = await api(`/patients/${id}`);
+      setSelectedPatient(patient);
+      setNotice("");
+    } catch (e) {
+      setNotice(e.message);
+    } finally {
+      setLoadingPatientDetails(false);
+    }
   }
 
   async function registerPatient(e) {
@@ -97,10 +133,78 @@ export default function App() {
     } catch (e) { setNotice(e.message); }
   }
 
-  async function bookAppointment(e) {
+  function beginDoctorEdit(doctor) {
+    setEditingDoctor(doctor._id);
+    setDoctorEditForm({
+      fullName: doctor.fullName || "",
+      specialization: doctor.specialization || "",
+      department: doctor.department || ""
+    });
+  }
+
+  async function saveDoctorEdit(e) {
     e.preventDefault();
     try {
-      await api("/appointments", { method: "POST", body: JSON.stringify({ ...appointmentForm, scheduledAt: new Date(appointmentForm.scheduledAt).toISOString() }) });
+      await api(`/doctors/${editingDoctor}`, {
+        method: "PATCH",
+        body: JSON.stringify(doctorEditForm)
+      });
+      setEditingDoctor("");
+      setNotice("Doctor profile updated.");
+      await refresh();
+    } catch (e) { setNotice(e.message); }
+  }
+
+  async function deactivateDoctor(id) {
+    if (!window.confirm("Deactivate this doctor? Existing appointments will remain in history.")) return;
+    try {
+      await api(`/doctors/${id}`, { method: "DELETE" });
+      if (editingDoctor === id) setEditingDoctor("");
+      setNotice("Doctor deactivated.");
+      await refresh();
+    } catch (e) { setNotice(e.message); }
+  }
+
+  function beginDepartmentEdit(department) {
+    setEditingDepartment(department._id);
+    setDepartmentEditForm({
+      name: department.name || "",
+      description: department.description || ""
+    });
+  }
+
+  async function saveDepartmentEdit(e) {
+    e.preventDefault();
+    try {
+      await api(`/departments/${editingDepartment}`, {
+        method: "PATCH",
+        body: JSON.stringify(departmentEditForm)
+      });
+      setEditingDepartment("");
+      setNotice("Department updated; assigned doctor records were synchronized.");
+      await refresh();
+    } catch (e) { setNotice(e.message); }
+  }
+
+  async function deactivateDepartment(id) {
+    if (!window.confirm("Deactivate this department? Active doctors must be reassigned or deactivated first.")) return;
+    try {
+      await api(`/departments/${id}`, { method: "DELETE" });
+      if (editingDepartment === id) setEditingDepartment("");
+      setNotice("Department deactivated.");
+      await refresh();
+    } catch (e) { setNotice(e.message); }
+  }
+
+  async function bookAppointment(e) {
+    e.preventDefault();
+    const scheduledDate = appointmentForm.scheduledAt ? new Date(appointmentForm.scheduledAt) : null;
+    if (!scheduledDate || Number.isNaN(scheduledDate.getTime()) || scheduledDate <= new Date()) {
+      setNotice("Choose a valid future appointment date and time.");
+      return;
+    }
+    try {
+      await api("/appointments", { method: "POST", body: JSON.stringify({ ...appointmentForm, scheduledAt: scheduledDate.toISOString() }) });
       setAppointmentForm({ patient: "", doctor: "", scheduledAt: "", reason: "" });
       setNotice("Appointment booked successfully."); await refresh();
     } catch (e) { setNotice(e.message); }
@@ -188,14 +292,27 @@ export default function App() {
 
   async function saveReschedule(e) {
     e.preventDefault();
+    const scheduledDate = rescheduleDate ? new Date(rescheduleDate) : null;
+    if (!scheduledDate || Number.isNaN(scheduledDate.getTime()) || scheduledDate <= new Date()) {
+      setNotice("Choose a valid future appointment date and time.");
+      return;
+    }
     try {
       await api(`/appointments/${reschedulingAppointment}/reschedule`, {
         method: "PATCH",
-        body: JSON.stringify({ scheduledAt: new Date(rescheduleDate).toISOString() })
+        body: JSON.stringify({ scheduledAt: scheduledDate.toISOString() })
       });
       setReschedulingAppointment("");
       setRescheduleDate("");
       setNotice("Appointment rescheduled successfully.");
+      await refresh();
+    } catch (e) { setNotice(e.message); }
+  }
+
+  async function completeAppointment(id) {
+    try {
+      await api(`/appointments/${id}/complete`, { method: "PATCH" });
+      setNotice("Appointment marked as completed.");
       await refresh();
     } catch (e) { setNotice(e.message); }
   }
@@ -233,10 +350,10 @@ export default function App() {
   return <div className="app-shell">
     <aside className="sidebar"><div className="brand"><span>✚</span><div><strong>CarePoint</strong><small>Hospital System</small></div></div>
       <p className="nav-label">WORKSPACE</p><a className="active" href="#overview">Overview</a><a href="#patients">Patients</a><a href="#appointments">Appointments</a><a href="#admissions">Admissions</a>
-      <div className="sidebar-bottom"><div className="avatar">{user.name?.[0] || "U"}</div><div><strong>{user.name}</strong><small>{user.role}</small></div><button className="quiet" onClick={() => { clearSession(); setUser(null); }}>↪</button></div>
+      <div className="sidebar-bottom"><div className="avatar">{user.name?.[0] || "U"}</div><div><strong>{user.name}</strong><small>{user.role}</small></div><button className="quiet" onClick={() => { clearSession(); setUser(null); setSelectedPatient(null); }}>↪</button></div>
     </aside>
     <main className="main">
-      <header className="topbar"><div><p className="eyebrow">HOSPITAL / OVERVIEW</p><h1>Good day, {user.name.split(" ")[0]}</h1><p className="muted">Here’s the current snapshot of your hospital.</p></div><div className="top-right"><span className="live-dot"></span> Sprint 2 <button className="outline" onClick={refresh}>Refresh data</button></div></header>
+      <header className="topbar"><div><p className="eyebrow">HOSPITAL / OVERVIEW</p><h1>Good day, {user.name?.split(" ")[0] || "there"}</h1><p className="muted">Here’s the current snapshot of your hospital.</p></div><div className="top-right"><span className="live-dot"></span> Sprint 2 <button className="outline" onClick={refresh}>Refresh data</button></div></header>
       {notice && <div className="notice">{notice}</div>}
       <section className="metrics" id="overview">
         <Metric label="Registered patients" value={patients.length} note="Patient records" icon="♙"/>
@@ -253,11 +370,35 @@ export default function App() {
             <select value={doctorForm.department} onChange={e => setDoctorForm({ ...doctorForm, department: e.target.value })}><option value="">No department yet</option>{departments.map(d => <option key={d._id} value={d.name}>{d.name}</option>)}</select>
             <button>Add doctor</button>
           </form>
+          <div className="manage-list" aria-label="Active doctor management">
+            {doctors.map(doctor => <div className="manage-row" key={doctor._id}>
+              <div className="manage-main"><strong>{doctor.fullName}</strong><small>{doctor.specialization}{doctor.department ? ` · ${doctor.department}` : ""}</small></div>
+              <div className="manage-actions">
+                <button type="button" className="tiny outline" onClick={() => beginDoctorEdit(doctor)}>Edit</button>
+                {user.role === "Admin" && <button type="button" className="tiny outline" onClick={() => deactivateDoctor(doctor._id)}>Deactivate</button>}
+              </div>
+            </div>)}
+            {!doctors.length && <p className="empty">No active doctors yet.</p>}
+          </div>
+          {editingDoctor && <form className="quick-form edit-form" onSubmit={saveDoctorEdit}>
+            <strong>Edit doctor profile</strong>
+            <input aria-label="Doctor full name" value={doctorEditForm.fullName} onChange={e => setDoctorEditForm({ ...doctorEditForm, fullName: e.target.value })} required maxLength="120" />
+            <input aria-label="Doctor specialization" value={doctorEditForm.specialization} onChange={e => setDoctorEditForm({ ...doctorEditForm, specialization: e.target.value })} required maxLength="100" />
+            <select aria-label="Doctor department" value={doctorEditForm.department} onChange={e => setDoctorEditForm({ ...doctorEditForm, department: e.target.value })}>
+              <option value="">No department</option>
+              {departments.map(department => <option key={department._id} value={department.name}>{department.name}</option>)}
+              {doctorEditForm.department && !departments.some(department => department.name === doctorEditForm.department) && <option value={doctorEditForm.department}>{doctorEditForm.department} (inactive)</option>}
+            </select>
+            <div className="manage-actions">
+              <button type="submit">Save changes</button>
+              <button type="button" className="outline" onClick={() => setEditingDoctor("")}>Cancel</button>
+            </div>
+          </form>}
         </div>}
         {(user.role === "Admin" || user.role === "Receptionist" || user.role === "Patient") && <div className="card quick-card">
           <div className="section-head"><div><h2>Book appointment</h2><p className="muted">Select a patient, doctor and future time</p></div></div>
           <form className="quick-form" onSubmit={bookAppointment}>
-            <select value={appointmentForm.patient} onChange={e => setAppointmentForm({ ...appointmentForm, patient: e.target.value })} required><option value="">Choose patient</option>{patients.map(p => <option key={p._id} value={p._id}>{p.fullName}</option>)}</select>
+            <select value={appointmentForm.patient} onChange={e => setAppointmentForm({ ...appointmentForm, patient: e.target.value })} required><option value="">{user.role === "Patient" ? "Your patient profile" : "Choose patient"}</option>{patients.map(p => <option key={p._id} value={p._id}>{p.fullName}</option>)}</select>
             <select value={appointmentForm.doctor} onChange={e => setAppointmentForm({ ...appointmentForm, doctor: e.target.value })} required><option value="">Choose doctor</option>{doctors.map(d => <option key={d._id} value={d._id}>{d.fullName} — {d.specialization}</option>)}</select>
             <input type="datetime-local" min={new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16)} value={appointmentForm.scheduledAt} onChange={e => setAppointmentForm({ ...appointmentForm, scheduledAt: e.target.value })} required />
             <input placeholder="Reason (optional)" value={appointmentForm.reason} onChange={e => setAppointmentForm({ ...appointmentForm, reason: e.target.value })} />
@@ -319,7 +460,25 @@ export default function App() {
             <input placeholder="Description (optional)" value={departmentForm.description} onChange={e => setDepartmentForm({ ...departmentForm, description: e.target.value })} />
             <button>Add department</button>
           </form>
-          <div className="department-list">{departments.map(d => <span className="pill" key={d._id}>{d.name}</span>)}</div>
+          <div className="manage-list" aria-label="Department management">
+            {departments.map(department => <div className="manage-row" key={department._id}>
+              <div className="manage-main"><strong>{department.name}</strong><small>{department.description || "No description"}</small></div>
+              <div className="manage-actions">
+                <button type="button" className="tiny outline" onClick={() => beginDepartmentEdit(department)}>Edit</button>
+                <button type="button" className="tiny outline" onClick={() => deactivateDepartment(department._id)}>Deactivate</button>
+              </div>
+            </div>)}
+            {!departments.length && <p className="empty">No active departments yet.</p>}
+          </div>
+          {editingDepartment && <form className="quick-form edit-form" onSubmit={saveDepartmentEdit}>
+            <strong>Edit department</strong>
+            <input aria-label="Department name" value={departmentEditForm.name} onChange={e => setDepartmentEditForm({ ...departmentEditForm, name: e.target.value })} required maxLength="100" />
+            <input aria-label="Department description" value={departmentEditForm.description} onChange={e => setDepartmentEditForm({ ...departmentEditForm, description: e.target.value })} maxLength="500" />
+            <div className="manage-actions">
+              <button type="submit">Save changes</button>
+              <button type="button" className="outline" onClick={() => setEditingDepartment("")}>Cancel</button>
+            </div>
+          </form>}
         </div>}
       </section>
       <section className="content-grid">
@@ -331,11 +490,11 @@ export default function App() {
             <button>+ Register</button>
           </form>}
           <input className="search" placeholder="⌕  Search patients by name..." value={search} onChange={e => setSearch(e.target.value)} />
-          <div className="table-wrap"><table><thead><tr><th>Patient</th><th>Phone</th><th>Registered</th></tr></thead><tbody>
-            {filteredPatients.map(p => <tr key={p._id}><td><div className="person"><span className="mini-avatar">{p.fullName[0]}</span><strong>{p.fullName}</strong></div></td><td>{p.phone || "—"}</td><td>{new Date(p.createdAt).toLocaleDateString()}</td></tr>)}
+          <div className="table-wrap"><table><thead><tr><th>Patient</th><th>Phone</th><th>Registered</th><th>Details</th></tr></thead><tbody>
+            {filteredPatients.map(p => <tr key={p._id}><td><div className="person"><span className="mini-avatar">{p.fullName[0]}</span><strong>{p.fullName}</strong></div></td><td>{p.phone || "—"}</td><td>{new Date(p.createdAt).toLocaleDateString()}</td><td><button type="button" className="tiny outline" onClick={() => viewPatientDetails(p._id)} disabled={loadingPatientDetails}>{loadingPatientDetails ? "Loading…" : "View"}</button></td></tr>)}
             {!filteredPatients.length && (
   <tr>
-    <td colSpan="3" className="empty">
+    <td colSpan="4" className="empty">
       {search.trim()
         ? "No patients match your search."
         : "No patient records yet. Register a patient to get started."}
@@ -345,8 +504,38 @@ export default function App() {
           </tbody></table></div>
         </div>
         <div className="right-column">
+          {selectedPatient && <div className="card" id="patient-details">
+            <div className="section-head">
+              <div><h2>Patient details</h2><p className="muted">Full patient profile and clinical records</p></div>
+              <button type="button" className="tiny outline" onClick={() => setSelectedPatient(null)}>Close</button>
+            </div>
+            <div className="patient-details-grid">
+              <div><small>Full name</small><strong>{selectedPatient.fullName || "—"}</strong></div>
+              <div><small>Phone</small><strong>{selectedPatient.phone || "—"}</strong></div>
+              <div><small>Email</small><strong>{selectedPatient.email || "—"}</strong></div>
+              <div><small>Date of birth</small><strong>{selectedPatient.dateOfBirth ? new Date(selectedPatient.dateOfBirth).toLocaleDateString() : "—"}</strong></div>
+              <div className="detail-wide"><small>Address</small><strong>{selectedPatient.address || "—"}</strong></div>
+            </div>
+            <div className="detail-section">
+              <h3>Clinical history</h3>
+              {(selectedPatient.medicalHistory || []).slice().reverse().map((entry, index) => <div className="detail-entry" key={entry._id || `clinical-${index}`}>
+                <strong>{entry.diagnosis || "Clinical note"}</strong>
+                <span>{entry.treatment || entry.note || "No treatment details recorded"}</span>
+                <small>{entry.recordedAt ? new Date(entry.recordedAt).toLocaleString() : "Date not recorded"}</small>
+              </div>)}
+              {!(selectedPatient.medicalHistory || []).length && <p className="empty">No clinical history recorded.</p>}
+            </div>
+            <div className="detail-section">
+              <h3>Prescriptions</h3>
+              {(selectedPatient.prescriptions || []).slice().reverse().map((entry, index) => <div className="detail-entry" key={entry._id || `prescription-${index}`}>
+                <strong>{entry.medicine}</strong>
+                <span>{entry.instructions || "No instructions recorded"}</span>
+              </div>)}
+              {!(selectedPatient.prescriptions || []).length && <p className="empty">No prescriptions recorded.</p>}
+            </div>
+          </div>}
           <div className="card" id="appointments"><div className="section-head"><div><h2>Appointments</h2><p className="muted">Upcoming schedule</p></div><span className="icon-box">▦</span></div>
-            {appointments.slice(0, 5).map(a => <div className="list-row" key={a._id}><div className="date-box"><strong>{new Date(a.scheduledAt).getDate()}</strong><small>{new Date(a.scheduledAt).toLocaleString("en", { month: "short" })}</small></div><div className="list-main"><strong>{a.patient?.fullName || "Patient"}</strong><small>{a.doctor?.fullName || "Doctor"} · {new Date(a.scheduledAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</small></div><span className={`status ${a.status.toLowerCase()}`}>{a.status}</span>{a.status === "Booked" && <><button className="tiny outline" onClick={() => startReschedule(a)}>Reschedule</button><button className="tiny outline" onClick={() => cancelAppointment(a._id)}>Cancel</button></>}</div>)}
+            {appointments.slice(0, 5).map(a => <div className="list-row" key={a._id}><div className="date-box"><strong>{new Date(a.scheduledAt).getDate()}</strong><small>{new Date(a.scheduledAt).toLocaleString("en", { month: "short" })}</small></div><div className="list-main"><strong>{a.patient?.fullName || "Patient"}</strong><small>{a.doctor?.fullName || "Doctor"} · {new Date(a.scheduledAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</small></div><span className={`status ${a.status.toLowerCase()}`}>{a.status}</span>{a.status === "Booked" && ["Admin", "Doctor"].includes(user.role) && <button className="tiny outline" onClick={() => completeAppointment(a._id)}>Complete</button>}{a.status === "Booked" && ["Admin", "Receptionist", "Patient"].includes(user.role) && <><button className="tiny outline" onClick={() => startReschedule(a)}>Reschedule</button><button className="tiny outline" onClick={() => cancelAppointment(a._id)}>Cancel</button></>}</div>)}
             {reschedulingAppointment && appointments.some(a => a._id === reschedulingAppointment) && <form className="reschedule-form" onSubmit={saveReschedule}>
               <label>New appointment time<input type="datetime-local" min={new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16)} value={rescheduleDate} onChange={e => setRescheduleDate(e.target.value)} required /></label>
               <button>Save new time</button><button type="button" className="outline" onClick={() => { setReschedulingAppointment(""); setRescheduleDate(""); }}>Cancel edit</button>
