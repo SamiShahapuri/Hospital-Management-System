@@ -9,8 +9,25 @@ const router = Router();
 router.use(authenticate);
 
 const isValidId = (value) => mongoose.isValidObjectId(value);
+const hospitalTimeZone = process.env.HOSPITAL_TIME_ZONE || "Asia/Kolkata";
 
-router.get("/", allowRoles("Admin", "Doctor", "Receptionist"), async (req, res, next) => {
+function getHospitalScheduleParts(date) {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: hospitalTimeZone,
+    weekday: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23"
+  }).formatToParts(date);
+  const values = Object.fromEntries(parts.map(({ type, value }) => [type, value]));
+  const weekdays = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+  return {
+    dayOfWeek: weekdays[values.weekday],
+    appointmentTime: `${values.hour}:${values.minute}`
+  };
+}
+
+router.get("/", allowRoles("Admin", "Doctor", "Receptionist", "Patient"), async (req, res, next) => {
   try {
     const filter = {};
     if (req.query.status) {
@@ -28,6 +45,14 @@ router.get("/", allowRoles("Admin", "Doctor", "Receptionist"), async (req, res, 
       if (!isValidId(req.query.patient)) return res.status(400).json({ message: "Invalid patient ID" });
       filter.patient = req.query.patient;
     }
+    if (req.user.role === "Patient") {
+      const ownProfile = await Patient.findOne({ linkedUser: req.user.id });
+      if (!ownProfile) return res.json([]);
+      if (req.query.patient && String(ownProfile._id) !== String(req.query.patient)) {
+        return res.status(403).json({ message: "You can only view your own appointments" });
+      }
+      filter.patient = ownProfile._id;
+    }
     const appointments = await Appointment.find(filter)
       .populate("patient", "fullName phone")
       .populate("doctor", "fullName specialization department")
@@ -41,6 +66,12 @@ router.post("/", allowRoles("Admin", "Receptionist", "Patient"), async (req, res
     const { patient, doctor, scheduledAt, reason = "" } = req.body;
     if (!isValidId(patient) || !isValidId(doctor)) {
       return res.status(400).json({ message: "Valid patient and doctor IDs are required" });
+    }
+    if (req.user.role === "Patient") {
+      const ownProfile = await Patient.findOne({ linkedUser: req.user.id });
+      if (!ownProfile || String(ownProfile._id) !== String(patient)) {
+        return res.status(403).json({ message: "You can only book appointments for your own patient profile" });
+      }
     }
     const date = new Date(scheduledAt);
     if (!scheduledAt || Number.isNaN(date.getTime()) || date <= new Date()) {
@@ -63,8 +94,7 @@ router.post("/", allowRoles("Admin", "Receptionist", "Patient"), async (req, res
     }
 
     // Check whether the appointment falls within the doctor's availability.
-    const dayOfWeek = date.getDay();
-    const appointmentTime = `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+    const { dayOfWeek, appointmentTime } = getHospitalScheduleParts(date);
 
     const available = doctorRecord.availability.some((slot) =>
       slot.dayOfWeek === dayOfWeek &&
@@ -89,7 +119,64 @@ router.post("/", allowRoles("Admin", "Receptionist", "Patient"), async (req, res
       { path: "patient", select: "fullName phone" },
       { path: "doctor", select: "fullName specialization department" }
     ]));
-  } catch (error) { next(error); }
+  } catch (error) {
+    // The unique partial index is the race-safe guard; translate its conflict to HTTP 409.
+    if (error.code === 11000) {
+      return res.status(409).json({ message: "Doctor already has an appointment at this time" });
+    }
+    next(error);
+  }
+});
+
+router.patch("/:id/reschedule", allowRoles("Admin", "Receptionist", "Patient"), async (req, res, next) => {
+  try {
+    if (!isValidId(req.params.id)) return res.status(400).json({ message: "Invalid appointment ID" });
+    const appointment = await Appointment.findById(req.params.id);
+    if (!appointment) return res.status(404).json({ message: "Appointment not found" });
+    if (appointment.status !== "Booked") {
+      return res.status(409).json({ message: "Only booked appointments can be rescheduled" });
+    }
+    if (req.user.role === "Patient") {
+      const ownProfile = await Patient.findOne({ linkedUser: req.user.id });
+      if (!ownProfile || String(appointment.patient) !== String(ownProfile._id)) {
+        return res.status(403).json({ message: "You can only reschedule your own appointments" });
+      }
+    }
+
+    const date = new Date(req.body.scheduledAt);
+    if (!req.body.scheduledAt || Number.isNaN(date.getTime()) || date <= new Date()) {
+      return res.status(400).json({ message: "Appointment time must be a valid future date and time" });
+    }
+    const doctorId = req.body.doctor || String(appointment.doctor);
+    if (!isValidId(doctorId)) return res.status(400).json({ message: "Valid doctor ID is required" });
+    const doctorRecord = await Doctor.findOne({ _id: doctorId, active: true });
+    if (!doctorRecord) return res.status(404).json({ message: "Active doctor not found" });
+
+    const { dayOfWeek, appointmentTime } = getHospitalScheduleParts(date);
+    const available = (doctorRecord.availability || []).some((slot) =>
+      slot.dayOfWeek === dayOfWeek && appointmentTime >= slot.startTime && appointmentTime < slot.endTime
+    );
+    if (!available) {
+      return res.status(400).json({ message: "Doctor is not available at the requested appointment time" });
+    }
+    const conflict = await Appointment.exists({
+      _id: { $ne: appointment._id }, doctor: doctorId, scheduledAt: date, status: "Booked"
+    });
+    if (conflict) return res.status(409).json({ message: "Doctor already has an appointment at this time" });
+
+    const updated = await Appointment.findOneAndUpdate(
+      { _id: appointment._id, status: "Booked" },
+      { $set: { doctor: doctorId, scheduledAt: date } },
+      { new: true, runValidators: true }
+    ).populate("patient", "fullName phone").populate("doctor", "fullName specialization department");
+    if (!updated) return res.status(409).json({ message: "Appointment changed before it could be rescheduled" });
+    res.json(updated);
+  } catch (error) {
+    if (error.code === 11000) {
+      return res.status(409).json({ message: "Doctor already has an appointment at this time" });
+    }
+    next(error);
+  }
 });
 
 router.patch("/:id/cancel", allowRoles("Admin", "Receptionist", "Patient"), async (req, res, next) => {
@@ -97,6 +184,12 @@ router.patch("/:id/cancel", allowRoles("Admin", "Receptionist", "Patient"), asyn
     if (!isValidId(req.params.id)) return res.status(400).json({ message: "Invalid appointment ID" });
     const appointment = await Appointment.findById(req.params.id);
     if (!appointment) return res.status(404).json({ message: "Appointment not found" });
+    if (req.user.role === "Patient") {
+      const ownProfile = await Patient.findOne({ linkedUser: req.user.id });
+      if (!ownProfile || String(appointment.patient) !== String(ownProfile._id)) {
+        return res.status(403).json({ message: "You can only cancel your own appointments" });
+      }
+    }
     if (appointment.status !== "Booked") {
       return res.status(409).json({ message: "Only booked appointments can be cancelled" });
     }

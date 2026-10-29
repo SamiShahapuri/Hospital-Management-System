@@ -9,6 +9,10 @@ const appointmentSchema = new mongoose.Schema({
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }
 }, { timestamps: true });
 
-appointmentSchema.index({ doctor: 1, scheduledAt: 1, status: 1 });
+// Only active bookings participate in uniqueness, so cancelled/completed history remains intact.
+appointmentSchema.index(
+  { doctor: 1, scheduledAt: 1 },
+  { unique: true, partialFilterExpression: { status: "Booked" } }
+);
 
 export default mongoose.model("Appointment", appointmentSchema);

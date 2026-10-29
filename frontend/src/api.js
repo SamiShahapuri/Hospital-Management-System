@@ -5,7 +5,12 @@ export async function api(path, options = {}) {
   if (token()) headers.Authorization = `Bearer ${token()}`;
   const response = await fetch(`${API}${path}`, { ...options, headers });
   const body = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(body.message || "Request failed");
+  if (!response.ok) {
+    const error = new Error(body.message || "Request failed");
+    error.status = response.status;
+    if (response.status === 401 && !["/auth/login", "/auth/register"].includes(path)) clearSession();
+    throw error;
+  }
   return body;
 }
 export function saveSession(data) {

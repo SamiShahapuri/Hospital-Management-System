@@ -18,7 +18,7 @@ function validAvailability(availability) {
   );
 }
 
-router.get("/", allowRoles("Admin", "Doctor", "Receptionist"), async (req, res, next) => {
+router.get("/", allowRoles("Admin", "Doctor", "Receptionist", "Patient"), async (req, res, next) => {
   try {
     const filter = { active: true };
     if (req.query.department) filter.department = String(req.query.department).trim();
