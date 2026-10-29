@@ -82,7 +82,7 @@ test("patient self-registration creates a profile and patient appointment access
   const auth = source("../src/routes/auth.js");
   const patients = source("../src/routes/patients.js");
   const appointments = source("../src/routes/appointments.js");
-  assert.ok(auth.includes("Patient.findOneAndUpdate"));
+  assert.ok(auth.includes("Patient.create({ fullName: name.trim(), email: normalizedEmail, linkedUser: user._id })"));
   assert.ok(patients.includes("You can only view your own patient record"));
   assert.ok(appointments.includes("You can only book appointments for your own patient profile"));
   assert.ok(appointments.includes("You can only cancel your own appointments"));
