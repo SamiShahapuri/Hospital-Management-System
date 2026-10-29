@@ -12,6 +12,7 @@ export default function App() {
   const [doctors, setDoctors] = useState([]);
   const [appointments, setAppointments] = useState([]);
   const [admissions, setAdmissions] = useState([]);
+  const [bills, setBills] = useState([]);
   const [form, setForm] = useState({ fullName: "", phone: "", email: "" });
   const [search, setSearch] = useState("");
   const [appointmentForm, setAppointmentForm] = useState({ patient: "", doctor: "", scheduledAt: "", reason: "" });
@@ -22,10 +23,13 @@ export default function App() {
 
   async function refresh() {
     try {
-      const [p, d, a, ad, depts] = await Promise.all([
-        api("/patients"), api("/doctors"), api("/appointments"), Promise.resolve([]), api("/departments")
+      const canManageBilling = user?.role === "Admin" || user?.role === "Receptionist";
+      const [p, d, a, ad, depts, b] = await Promise.all([
+        api("/patients"), api("/doctors"), api("/appointments"), api("/admissions"),
+        api("/departments"), canManageBilling ? api("/billing") : Promise.resolve([])
       ]);
-      setPatients(p); setDoctors(d); setAppointments(a); setAdmissions(ad); setDepartments(depts); setNotice("");
+      setPatients(p); setDoctors(d); setAppointments(a); setAdmissions(ad); setDepartments(depts);
+      setBills(b); setNotice("");
     } catch (e) { setNotice(e.message); }
   }
   useEffect(() => { if (user) refresh(); }, [user]);
