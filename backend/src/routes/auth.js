@@ -2,6 +2,7 @@ import { Router } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
+import Patient from "../models/Patient.js";
 import { authenticate } from "../middleware/auth.js";
 const router = Router();
 router.post("/register", async (req, res, next) => {
@@ -13,8 +14,17 @@ router.post("/register", async (req, res, next) => {
     const normalizedEmail = email.trim().toLowerCase();
     if (await User.exists({ email: normalizedEmail })) return res.status(409).json({ message: "Email is already registered" });
     const user = await User.create({ name: name.trim(), email: normalizedEmail, passwordHash: await bcrypt.hash(password, 12), role: "Patient" });
+    // Give every self-registered patient a profile that booking APIs can scope to their account.
+    await Patient.findOneAndUpdate(
+      { email: normalizedEmail },
+      { $setOnInsert: { fullName: name.trim(), email: normalizedEmail } },
+      { upsert: true, new: true, runValidators: true }
+    );
     res.status(201).json({ id: user.id, name: user.name, email: user.email, role: user.role });
-  } catch (e) { next(e); }
+  } catch (e) {
+    if (e?.code === 11000) return res.status(409).json({ message: "Email is already registered" });
+    next(e);
+  }
 });
 router.post("/login", async (req, res, next) => {
   try {
