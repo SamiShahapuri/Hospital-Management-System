@@ -1,5 +1,4 @@
-
-name: Sprint 1 CI
+name: Hospital Management System CI
 
 on:
   push:
@@ -7,9 +6,14 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
   backend-check:
+    name: Backend syntax and tests
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 
@@ -19,7 +23,7 @@ jobs:
 
       - name: Install backend dependencies
         working-directory: backend
-        run: npm install
+        run: npm install --no-audit --no-fund
 
       - name: Check backend JavaScript syntax
         working-directory: backend
@@ -32,7 +36,9 @@ jobs:
         run: npm test
 
   frontend-build:
+    name: Frontend production build
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 
@@ -42,7 +48,7 @@ jobs:
 
       - name: Install frontend dependencies
         working-directory: frontend
-        run: npm install
+        run: npm install --no-audit --no-fund
 
       - name: Build frontend
         working-directory: frontend
