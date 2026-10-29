@@ -15,6 +15,8 @@ export default function App() {
   const [appointments, setAppointments] = useState([]);
   const [admissions, setAdmissions] = useState([]);
   const [bills, setBills] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+  const [reportSummary, setReportSummary] = useState(null);
   const [medicalForm, setMedicalForm] = useState({ patient: "", diagnosis: "", treatment: "", note: "" });
   const [prescriptionForm, setPrescriptionForm] = useState({ patient: "", medicine: "", instructions: "" });
   const [billingForm, setBillingForm] = useState({ patient: "", description: "", quantity: "1", unitPrice: "", notes: "" });
@@ -32,13 +34,17 @@ export default function App() {
     try {
       const canManageAdmissions = ["Admin", "Doctor", "Receptionist"].includes(user?.role);
       const canManageBilling = user?.role === "Admin" || user?.role === "Receptionist";
-      const [p, d, a, ad, depts, b] = await Promise.all([
+      const canSeeNotifications = ["Admin", "Doctor", "Receptionist"].includes(user?.role);
+      const canSeeReports = user?.role === "Admin";
+      const [p, d, a, ad, depts, b, n, report] = await Promise.all([
         api("/patients"), api("/doctors"), api("/appointments"),
         canManageAdmissions ? api("/admissions") : Promise.resolve([]),
-        api("/departments"), canManageBilling ? api("/billing") : Promise.resolve([])
+        api("/departments"), canManageBilling ? api("/billing") : Promise.resolve([]),
+        canSeeNotifications ? api("/notifications") : Promise.resolve([]),
+        canSeeReports ? api("/reports/summary") : Promise.resolve(null)
       ]);
       setPatients(p); setDoctors(d); setAppointments(a); setAdmissions(ad); setDepartments(depts);
-      setBills(b); setNotice("");
+      setBills(b); setNotifications(n); setReportSummary(report); setNotice("");
     } catch (e) {
       setNotice(e.message);
       if (e.status === 401) { clearSession(); setUser(null); }
