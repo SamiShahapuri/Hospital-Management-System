@@ -18,8 +18,8 @@ A **Patient Record and Appointment Management System** for hospitals. It manages
 |---|---|---|
 | Part 1 – SRS, SAD, Test Plan, Use Cases | Completed | ✅ Done |
 | Backlog creation and sprint planning | by 12 Oct 2026 | ✅ Done |
-| Sprint 1 | 19 – 23 Oct 2026 | 🛠️ In progress |
-| Sprint 2 | 26 – 30 Oct 2026 | 📅 Planned |
+| Sprint 1 | 19 – 23 Oct 2026 | ✅ Accepted by the instructor |
+| Sprint 2 | 26 – 30 Oct 2026 | 🛠️ In progress |
 
 > Update this table as each phase is completed.
 
@@ -33,8 +33,8 @@ Taken from the [SRS](Documents/SRSdocument.docx):
 | FR-2 | Patient & Medical Records | Register patients; manage history, diagnosis, treatment and prescriptions |
 | FR-3 | Doctors & Departments | Manage doctors, specializations, availability, and department assignment |
 | FR-4 | Appointments | Book, reschedule and cancel appointments based on doctor availability |
-| FR-5 | Admission & Discharge | Admit patients, allocate rooms/beds, track treatment, discharge |
-| FR-6 | Billing & Payments | Generate bills for services and record payments |
+| FR-5 | Admission & Discharge | Admit patients, allocate rooms/beds with active-bed conflict protection, and discharge |
+| FR-6 | Billing & Payments | Create itemized bills, calculate totals, record payments and cancel unpaid bills |
 | FR-7 | Notifications | Reminders for appointments, tests and payments |
 | FR-8 | Reports | Reports on patients, doctors, appointments, admissions, lab tests and payments |
 
@@ -66,7 +66,7 @@ Hospital-Management-System/
 └── README.md
 ```
 
-> Source code folders will be added during Sprint 1 and Sprint 2.
+> Sprint 1 source code includes authentication, patient/doctor/department management and appointment booking. Sprint 2 adds admission/discharge, clinical history and billing APIs with dashboard forms.
 
 ## 🗂️ Project Management
 
@@ -80,7 +80,7 @@ We manage the backlog with **GitHub Issues** and a **GitHub Project board**.
 | Sprint | Dates | Focus |
 |---|---|---|
 | Sprint 1 | 19 – 23 Oct 2026 | Login & roles, patient records, doctors & departments, appointments, GitHub Actions, security and validation |
-| Sprint 2 | 26 – 30 Oct 2026 | Admission/discharge, billing, notifications, reports, remaining NFRs, documentation |
+| Sprint 2 | 26 – 30 Oct 2026 | Admission/discharge, diagnosis and treatment history, billing/payment workflow, authorization hardening, responsive form polish and testing |
 
 📋 **Project board:** [GitHub Projects — Hospital Management System](https://github.com/users/SamiShahapuri/projects/3)
 
@@ -123,7 +123,7 @@ npm install
 npm run dev
 ```
 
-The frontend defaults to the API at `http://localhost:5000/api`. Configure `VITE_API_URL` in a frontend `.env` file if your API runs elsewhere. Use demo data only; do not enter real patient information.
+The frontend defaults to the API at `http://localhost:5000/api`. Configure `VITE_API_URL` in a frontend `.env` file if your API runs elsewhere. The backend uses `HOSPITAL_TIME_ZONE` for scheduling and defaults to `Asia/Kolkata`. Use demo data only; do not enter real patient information. The included seed credentials and fallback JWT secret are for local demonstrations only and must be replaced before any deployment.
 
 ## 🧪 Testing
 
@@ -147,3 +147,14 @@ Test cases for each module (Login, Patient Records, Doctors, Appointments, Admis
 | SAD | [System Architecture Document](Documents/README.md) — verify against the originally submitted SAD before final submission |
 
 Any deviations from the submitted documents will be recorded and explained at the final demo.
+
+
+## Sprint 2 API notes
+
+- **Admissions:** `GET/POST /api/admissions` and `PATCH /api/admissions/:id/discharge`. A partial unique index protects each room/bed while occupied.
+- **Clinical history:** `POST /api/patients/:id/history` accepts `diagnosis`, `treatment`, and an optional `note`; the author and timestamp are recorded.
+- **Billing:** `GET/POST /api/billing`, `PATCH /api/billing/:id/pay`, and `PATCH /api/billing/:id/cancel`. Line totals and subtotal are computed server-side.
+- **Patient self-service:** `POST /api/auth/register` creates a Patient account and linked profile. Patient appointment listing, booking, cancellation, and own-record reads are scoped to that linked profile.
+- **Appointment conflicts:** a MongoDB partial unique index ensures one `Booked` appointment per doctor and exact slot; conflicts return HTTP 409. Availability uses `HOSPITAL_TIME_ZONE` (default `Asia/Kolkata`).
+
+These modules are an academic demonstration, not a production clinical or financial system. Add deployment secrets, email verification, audit review, backups, and production security review before real use.
