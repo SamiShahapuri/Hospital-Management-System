@@ -134,8 +134,7 @@ router.patch("/:id/cancel", allowRoles("Admin", "Receptionist", "Patient"), asyn
     const appointment = await Appointment.findById(req.params.id);
     if (!appointment) return res.status(404).json({ message: "Appointment not found" });
     if (req.user.role === "Patient") {
-      const account = await User.findById(req.user.id).select("email");
-      const ownProfile = account?.email ? await Patient.findOne({ email: account.email }) : null;
+      const ownProfile = await Patient.findOne({ linkedUser: req.user.id });
       if (!ownProfile || String(appointment.patient) !== String(ownProfile._id)) {
         return res.status(403).json({ message: "You can only cancel your own appointments" });
       }
