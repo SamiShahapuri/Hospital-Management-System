@@ -25,7 +25,7 @@ A **Patient Record and Appointment Management System** for hospitals. It manages
 
 ## ✨ Features
 
-Taken from the [SRS](Documents/SRSdocument.docx):
+Taken from the [SRS](Documents/SRSdocument.pdf):
 
 | ID | Feature | Summary |
 |---|---|---|
@@ -47,17 +47,17 @@ Taken from the [SRS](Documents/SRSdocument.docx):
 | **Admin** | Manages doctors, departments and reports |
 | **Doctor** | Manages medical records, prescriptions and treatments |
 | **Receptionist** | Handles patient registration, appointments, admissions and billing |
-| **Patient** | Books and views appointments and their own records |
+| **Patient** | Registers an account, books/reschedules/cancels their own appointments, and views their own medical records |
 
 ## 📁 Repository Structure
 
 ```
 Hospital-Management-System/
 ├── Documents/
-│   ├── SRSdocument.docx               # Software Requirements Specification (FR & NFR)
-│   ├── testPlanDocument.docx          # Unit, integration and system test cases
+│   ├── SRSdocument.pdf               # Software Requirements Specification (FR & NFR)
+│   ├── testPlanDocument.pdf          # Unit, integration and system test cases
 │   ├── useCaseDiagram.jpeg            # Use case diagram (actors and interactions)
-│   ├── useCaseFlowDocumentation.docx  # Main, alternate and exception flows
+│   ├── useCaseFlowDocumentation.pdf  # Main, alternate and exception flows
 │   └── README.md                      # Notes on the documents
 ├── .github/
 │   └── ISSUE_TEMPLATE/
@@ -127,7 +127,7 @@ The frontend defaults to the API at `http://localhost:5000/api`. Configure `VITE
 
 ## 🧪 Testing
 
-Test cases for each module (Login, Patient Records, Doctors, Appointments, Admission/Discharge, Billing, Notifications, Reports) are in [`Documents/testPlanDocument.docx`](Documents/testPlanDocument.docx).
+Test cases for each module (Login, Patient Records, Doctors, Appointments, Admission/Discharge, Billing, Notifications, Reports) are in [`Documents/testPlanDocument.pdf`](Documents/testPlanDocument.docx).
 
 ## 🎥 Demo Videos
 
@@ -143,7 +143,7 @@ Test cases for each module (Login, Patient Records, Doctors, Appointments, Admis
 | [SRS](Documents/SRSdocument.docx) | Functional and non-functional requirements |
 | [Test Plan](Documents/testPlanDocument.docx) | Test cases per module |
 | [Use Case Diagram](Documents/useCaseDiagram.jpeg) | Actors and their interactions with the system |
-| [Use Case Flow](Documents/useCaseFlowDocumentation.docx) | Step-by-step flows for each use case |
+| [Use Case Flow](Documents/useCaseFlowDocumentation.pdf) | Step-by-step flows for each use case |
 | SAD | [System Architecture Document](Documents/README.md) — verify against the originally submitted SAD before final submission |
 
 Any deviations from the submitted documents will be recorded and explained at the final demo.
@@ -155,6 +155,8 @@ Any deviations from the submitted documents will be recorded and explained at th
 - **Clinical history:** `POST /api/patients/:id/history` accepts `diagnosis`, `treatment`, and an optional `note`; the author and timestamp are recorded.
 - **Billing:** `GET/POST /api/billing`, `PATCH /api/billing/:id/pay`, and `PATCH /api/billing/:id/cancel`. Line totals and subtotal are computed server-side.
 - **Patient self-service:** `POST /api/auth/register` creates a Patient account and linked profile. Patient appointment listing, booking, cancellation, and own-record reads are scoped to that linked profile.
-- **Appointment conflicts:** a MongoDB partial unique index ensures one `Booked` appointment per doctor and exact slot; conflicts return HTTP 409. Availability uses `HOSPITAL_TIME_ZONE` (default `Asia/Kolkata`).
+- **Appointment management:** book, reschedule and cancel appointments; the partial unique index ensures one `Booked` appointment per doctor and exact slot. Conflicts return HTTP 409. Availability uses `HOSPITAL_TIME_ZONE` (default `Asia/Kolkata`).
+- **Reports:** `GET /api/reports/summary` returns Admin-only counts and paid/outstanding billing totals.
+- **In-app notifications:** `GET /api/notifications` creates current reminders from appointments in the next 24 hours and unpaid bills for authorized staff. These are dashboard reminders, not email/SMS delivery.
 
 These modules are an academic demonstration, not a production clinical or financial system. Add deployment secrets, email verification, audit review, backups, and production security review before real use.
