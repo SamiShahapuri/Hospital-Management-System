@@ -13,6 +13,7 @@ export default function App() {
   const [appointments, setAppointments] = useState([]);
   const [admissions, setAdmissions] = useState([]);
   const [bills, setBills] = useState([]);
+  const [medicalForm, setMedicalForm] = useState({ patient: "", diagnosis: "", treatment: "", note: "" });
   const [form, setForm] = useState({ fullName: "", phone: "", email: "" });
   const [search, setSearch] = useState("");
   const [appointmentForm, setAppointmentForm] = useState({ patient: "", doctor: "", scheduledAt: "", reason: "" });
@@ -84,6 +85,23 @@ export default function App() {
       setNotice("Patient admitted and bed allocated."); await refresh();
     } catch (e) { setNotice(e.message); }
   }
+  async function saveMedicalRecord(e) {
+    e.preventDefault();
+    try {
+      await api(`/patients/${medicalForm.patient}/history`, {
+        method: "POST",
+        body: JSON.stringify({
+          diagnosis: medicalForm.diagnosis,
+          treatment: medicalForm.treatment,
+          note: medicalForm.note
+        })
+      });
+      setMedicalForm({ patient: "", diagnosis: "", treatment: "", note: "" });
+      setNotice("Diagnosis and treatment recorded successfully.");
+      await refresh();
+    } catch (e) { setNotice(e.message); }
+  }
+
   async function cancelAppointment(id) {
     try { await api(`/appointments/${id}/cancel`, { method: "PATCH" }); setNotice("Appointment cancelled."); await refresh(); }
     catch (e) { setNotice(e.message); }
