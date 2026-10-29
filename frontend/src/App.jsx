@@ -218,6 +218,21 @@ export default function App() {
             <button>Save clinical record</button>
           </form>
         </div>}
+        {(user.role === "Admin" || user.role === "Receptionist") && <div className="card quick-card">
+          <div className="section-head"><div><h2>Create bill</h2><p className="muted">Create an itemized patient bill</p></div></div>
+          <form className="quick-form" onSubmit={createBill}>
+            <select value={billingForm.patient} onChange={e => setBillingForm({ ...billingForm, patient: e.target.value })} required>
+              <option value="">Choose patient</option>{patients.map(p => <option key={p._id} value={p._id}>{p.fullName}</option>)}
+            </select>
+            <input placeholder="Service or item description" value={billingForm.description} onChange={e => setBillingForm({ ...billingForm, description: e.target.value })} maxLength="200" required />
+            <div className="inline-fields">
+              <input type="number" min="1" max="1000" step="1" aria-label="Quantity" placeholder="Quantity" value={billingForm.quantity} onChange={e => setBillingForm({ ...billingForm, quantity: e.target.value })} required />
+              <input type="number" min="0" max="1000000" step="0.01" aria-label="Unit price" placeholder="Unit price (₹)" value={billingForm.unitPrice} onChange={e => setBillingForm({ ...billingForm, unitPrice: e.target.value })} required />
+            </div>
+            <input placeholder="Billing note (optional)" value={billingForm.notes} onChange={e => setBillingForm({ ...billingForm, notes: e.target.value })} maxLength="500" />
+            <button>Create bill</button>
+          </form>
+        </div>}
         {user.role === "Admin" && <div className="card quick-card">
           <div className="section-head"><div><h2>Manage departments</h2><p className="muted">Maintain hospital departments</p></div></div>
           <form className="quick-form" onSubmit={addDepartment}>
