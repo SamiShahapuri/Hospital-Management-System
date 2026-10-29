@@ -109,3 +109,15 @@ test("frontend connects Sprint 2 workflows and expired-token handling", () => {
   assert.ok(app.includes("submitRegistration"));
   assert.ok(api.includes("error.status = response.status"));
 });
+
+test("reports and in-app notifications are mounted and role protected", () => {
+  const server = source("../src/server.js");
+  const reports = source("../src/routes/reports.js");
+  const notifications = source("../src/routes/notifications.js");
+  assert.ok(server.includes('app.use("/api/notifications", notificationRoutes)'));
+  assert.ok(server.includes('app.use("/api/reports", reportRoutes)'));
+  assert.ok(reports.includes('allowRoles("Admin")'));
+  assert.ok(reports.includes("outstandingAmount"));
+  assert.ok(notifications.includes("Appointment reminder"));
+  assert.ok(notifications.includes('req.user.role === "Admin" || req.user.role === "Receptionist"'));
+});
