@@ -20,3 +20,8 @@ input:focus,select:focus,textarea:focus{border-color:#55a69c;box-shadow:0 0 0 3p
 html{scroll-behavior:smooth;scroll-padding-top:18px}
 [id]{scroll-margin-top:18px}
 @media(max-width:650px){.reschedule-form{grid-template-columns:1fr}.reschedule-form button{width:100%}}
+
+.report-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:6px 0 14px}
+.report-grid>div{display:grid;gap:4px;padding:12px;background:#f8fbfc;border:1px solid #edf1f4;border-radius:10px}
+.report-grid small{font-size:10px;color:#8795a4}
+.report-grid strong{font-family:Manrope,sans-serif;font-size:18px;color:#1d2b3a;overflow-wrap:anywhere}
