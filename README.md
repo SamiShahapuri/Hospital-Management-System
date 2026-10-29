@@ -130,7 +130,7 @@ The frontend defaults to the API at `http://localhost:5000/api`. Configure `VITE
 
 ## 🧪 Testing
 
-The submitted test cases are in [`Documents/testPlanDocument.pdf`](Documents/testPlanDocument.pdf). Automated backend checks run with `cd backend && npm test`. CI also runs the actual API against a dedicated MongoDB service using `cd backend && npm run test:integration`, checks JavaScript syntax, and builds the frontend. See [`Documents/FINAL_VERIFICATION_CHECKLIST.md`](Documents/FINAL_VERIFICATION_CHECKLIST.md) for the remaining manual workflow checks.
+The submitted test cases are in [`Documents/testPlanDocument.pdf`](Documents/testPlanDocument.pdf). Automated backend checks run with `cd backend && npm test`. CI also runs the actual API against a dedicated MongoDB service, checks JavaScript syntax, and builds the frontend. To run the HTTP integration suite locally, make sure MongoDB is running and point `MONGODB_URI` at a separate test database (not your working app database), set `HMS_INTEGRATION_TESTS=1`, then run `npm run test:integration` from `backend`. In PowerShell, for example: `$env:MONGODB_URI='mongodb://127.0.0.1:27017/hms_integration_test'; $env:HMS_INTEGRATION_TESTS='1'; npm.cmd run test:integration`. See [`Documents/FINAL_VERIFICATION_CHECKLIST.md`](Documents/FINAL_VERIFICATION_CHECKLIST.md) for the remaining manual workflow checks.
 
 ## 🎥 Demo Videos
 
