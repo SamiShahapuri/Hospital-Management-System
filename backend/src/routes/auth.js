@@ -14,12 +14,8 @@ router.post("/register", async (req, res, next) => {
     const normalizedEmail = email.trim().toLowerCase();
     if (await User.exists({ email: normalizedEmail })) return res.status(409).json({ message: "Email is already registered" });
     const user = await User.create({ name: name.trim(), email: normalizedEmail, passwordHash: await bcrypt.hash(password, 12), role: "Patient" });
-    // Give every self-registered patient a profile that booking APIs can scope to their account.
-    await Patient.findOneAndUpdate(
-      { email: normalizedEmail },
-      { $setOnInsert: { fullName: name.trim(), email: normalizedEmail } },
-      { upsert: true, new: true, runValidators: true }
-    );
+    // Link the new profile directly to its account; do not claim legacy records by email alone.
+    await Patient.create({ fullName: name.trim(), email: normalizedEmail, linkedUser: user._id });
     res.status(201).json({ id: user.id, name: user.name, email: user.email, role: user.role });
   } catch (e) {
     if (e?.code === 11000) return res.status(409).json({ message: "Email is already registered" });
