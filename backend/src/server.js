@@ -10,6 +10,11 @@ import appointmentRoutes from "./routes/appointments.js";
 import admissionRoutes from "./routes/admissions.js";
 import billingRoutes from "./routes/billing.js";
 
+if (process.env.NODE_ENV === "production" && !process.env.JWT_SECRET) {
+  console.error("JWT_SECRET must be set in production.");
+  process.exit(1);
+}
+
 const app = express();
 app.use(cors({ origin: process.env.CLIENT_ORIGIN || "http://localhost:5173" }));
 app.use(express.json({ limit: "1mb" }));
