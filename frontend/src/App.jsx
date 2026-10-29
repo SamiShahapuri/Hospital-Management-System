@@ -274,6 +274,26 @@ export default function App() {
             {admissions.filter(a => a.status === "Admitted").slice(0, 4).map(a => <div className="list-row" key={a._id}><div className="bed-icon">▤</div><div className="list-main"><strong>{a.patient?.fullName || "Patient"}</strong><small>Room {a.roomNumber} · Bed {a.bedNumber}</small></div><button className="tiny outline" onClick={() => discharge(a._id)}>Discharge</button></div>)}
             {!admissions.some(a => a.status === "Admitted") && <p className="empty">No active admissions.</p>}
           </div>
+          {(user.role === "Admin" || user.role === "Doctor") && <div className="card"><div className="section-head"><div><h2>Recent clinical records</h2><p className="muted">Latest diagnosis and treatment entries</p></div></div>
+            {patients.flatMap(p => (p.medicalHistory || []).map((h, index) => ({ ...h, patientName: p.fullName, patientId: p._id, fallbackKey: index })))
+              .sort((a, b) => new Date(b.recordedAt || 0) - new Date(a.recordedAt || 0)).slice(0, 5).map(h =>
+                <div className="list-row" key={`${h.patientId}-${h._id || h.fallbackKey}`}>
+                  <div className="bed-icon">✚</div><div className="list-main"><strong>{h.patientName}</strong>
+                    <small>{h.diagnosis || h.note || "Clinical entry"}{h.treatment ? ` · ${h.treatment}` : ""}</small>
+                  </div><span className="pill">{h.recordedAt ? new Date(h.recordedAt).toLocaleDateString() : "—"}</span>
+                </div>)}
+            {!patients.some(p => (p.medicalHistory || []).length) && <p className="empty">No clinical records yet.</p>}
+          </div>}
+          {(user.role === "Admin" || user.role === "Receptionist") && <div className="card"><div className="section-head"><div><h2>Billing & payments</h2><p className="muted">Latest patient bills</p></div><span className="icon-box">₹</span></div>
+            {bills.slice(0, 5).map(bill => <div className="list-row" key={bill._id}>
+              <div className="bed-icon">₹</div><div className="list-main"><strong>{bill.patient?.fullName || "Patient"} · ₹{Number(bill.subtotal).toFixed(2)}</strong>
+                <small>{(bill.items || []).map(item => `${item.description} × ${item.quantity}`).join(", ")}</small>
+              </div><span className={`status ${bill.status.toLowerCase()}`}>{bill.status}</span>
+              {bill.status === "Unpaid" && <button className="tiny outline" onClick={() => markBillPaid(bill._id)}>Mark paid</button>}
+              {bill.status === "Unpaid" && <button className="tiny outline" onClick={() => cancelBill(bill._id)}>Cancel</button>}
+            </div>)}
+            {!bills.length && <p className="empty">No bills yet.</p>}
+          </div>}
         </div>
       </section>
       <footer>CarePoint HMS · Academic Sprint 1 MVP <span>Demo data only · Do not enter real patient information</span></footer>
