@@ -43,7 +43,7 @@ router.get("/:id", allowRoles("Admin", "Doctor", "Receptionist", "Patient"), asy
 });
 router.post("/:id/history", allowRoles("Admin", "Doctor"), async (req, res, next) => {
   try {
-    if (!/^[a-f\\d]{24}$/i.test(req.params.id)) {
+    if (!mongoose.isValidObjectId(req.params.id)) {
       return res.status(400).json({ message: "Invalid patient ID" });
     }
     const diagnosis = typeof req.body.diagnosis === "string" ? req.body.diagnosis.trim() : "";
