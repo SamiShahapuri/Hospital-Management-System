@@ -21,6 +21,8 @@ export default function App() {
   const [form, setForm] = useState({ fullName: "", phone: "", email: "" });
   const [search, setSearch] = useState("");
   const [appointmentForm, setAppointmentForm] = useState({ patient: "", doctor: "", scheduledAt: "", reason: "" });
+  const [reschedulingAppointment, setReschedulingAppointment] = useState("");
+  const [rescheduleDate, setRescheduleDate] = useState("");
   const [admissionForm, setAdmissionForm] = useState({ patient: "", roomNumber: "", bedNumber: "" });
   const [doctorForm, setDoctorForm] = useState({ fullName: "", specialization: "", department: "" });
   const [departmentForm, setDepartmentForm] = useState({ name: "", description: "" });
@@ -168,6 +170,26 @@ export default function App() {
       });
       setMedicalForm({ patient: "", diagnosis: "", treatment: "", note: "" });
       setNotice("Diagnosis and treatment recorded successfully.");
+      await refresh();
+    } catch (e) { setNotice(e.message); }
+  }
+
+  function startReschedule(appointment) {
+    const localDate = new Date(new Date(appointment.scheduledAt).getTime() - new Date(appointment.scheduledAt).getTimezoneOffset() * 60000);
+    setReschedulingAppointment(appointment._id);
+    setRescheduleDate(localDate.toISOString().slice(0, 16));
+  }
+
+  async function saveReschedule(e) {
+    e.preventDefault();
+    try {
+      await api(`/appointments/${reschedulingAppointment}/reschedule`, {
+        method: "PATCH",
+        body: JSON.stringify({ scheduledAt: new Date(rescheduleDate).toISOString() })
+      });
+      setReschedulingAppointment("");
+      setRescheduleDate("");
+      setNotice("Appointment rescheduled successfully.");
       await refresh();
     } catch (e) { setNotice(e.message); }
   }
