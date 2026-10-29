@@ -59,13 +59,14 @@ export default function App() {
       setBills(b); setNotifications(n); setReportSummary(report); setNotice("");
     } catch (e) {
       setNotice(e.message);
-      if (e.status === 401) { clearSession(); setUser(null); }
+      if (e.status === 401) { clearSession(); setUser(null); setSelectedPatient(null); }
     }
   }
   useEffect(() => {
     const handleSessionExpired = () => {
       clearSession();
       setUser(null);
+      setSelectedPatient(null);
       setNotice("Your session expired. Please sign in again.");
     };
     window.addEventListener("hms:session-expired", handleSessionExpired);
@@ -349,7 +350,7 @@ export default function App() {
   return <div className="app-shell">
     <aside className="sidebar"><div className="brand"><span>✚</span><div><strong>CarePoint</strong><small>Hospital System</small></div></div>
       <p className="nav-label">WORKSPACE</p><a className="active" href="#overview">Overview</a><a href="#patients">Patients</a><a href="#appointments">Appointments</a><a href="#admissions">Admissions</a>
-      <div className="sidebar-bottom"><div className="avatar">{user.name?.[0] || "U"}</div><div><strong>{user.name}</strong><small>{user.role}</small></div><button className="quiet" onClick={() => { clearSession(); setUser(null); }}>↪</button></div>
+      <div className="sidebar-bottom"><div className="avatar">{user.name?.[0] || "U"}</div><div><strong>{user.name}</strong><small>{user.role}</small></div><button className="quiet" onClick={() => { clearSession(); setUser(null); setSelectedPatient(null); }}>↪</button></div>
     </aside>
     <main className="main">
       <header className="topbar"><div><p className="eyebrow">HOSPITAL / OVERVIEW</p><h1>Good day, {user.name?.split(" ")[0] || "there"}</h1><p className="muted">Here’s the current snapshot of your hospital.</p></div><div className="top-right"><span className="live-dot"></span> Sprint 2 <button className="outline" onClick={refresh}>Refresh data</button></div></header>
