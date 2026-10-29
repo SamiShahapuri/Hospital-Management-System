@@ -213,6 +213,14 @@ export default function App() {
     } catch (e) { setNotice(e.message); }
   }
 
+  async function completeAppointment(id) {
+    try {
+      await api(`/appointments/${id}/complete`, { method: "PATCH" });
+      setNotice("Appointment marked as completed.");
+      await refresh();
+    } catch (e) { setNotice(e.message); }
+  }
+
   async function cancelAppointment(id) {
     try { await api(`/appointments/${id}/cancel`, { method: "PATCH" }); setNotice("Appointment cancelled."); await refresh(); }
     catch (e) { setNotice(e.message); }
@@ -359,7 +367,7 @@ export default function App() {
         </div>
         <div className="right-column">
           <div className="card" id="appointments"><div className="section-head"><div><h2>Appointments</h2><p className="muted">Upcoming schedule</p></div><span className="icon-box">▦</span></div>
-            {appointments.slice(0, 5).map(a => <div className="list-row" key={a._id}><div className="date-box"><strong>{new Date(a.scheduledAt).getDate()}</strong><small>{new Date(a.scheduledAt).toLocaleString("en", { month: "short" })}</small></div><div className="list-main"><strong>{a.patient?.fullName || "Patient"}</strong><small>{a.doctor?.fullName || "Doctor"} · {new Date(a.scheduledAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</small></div><span className={`status ${a.status.toLowerCase()}`}>{a.status}</span>{a.status === "Booked" && ["Admin", "Receptionist", "Patient"].includes(user.role) && <><button className="tiny outline" onClick={() => startReschedule(a)}>Reschedule</button><button className="tiny outline" onClick={() => cancelAppointment(a._id)}>Cancel</button></>}</div>)}
+            {appointments.slice(0, 5).map(a => <div className="list-row" key={a._id}><div className="date-box"><strong>{new Date(a.scheduledAt).getDate()}</strong><small>{new Date(a.scheduledAt).toLocaleString("en", { month: "short" })}</small></div><div className="list-main"><strong>{a.patient?.fullName || "Patient"}</strong><small>{a.doctor?.fullName || "Doctor"} · {new Date(a.scheduledAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</small></div><span className={`status ${a.status.toLowerCase()}`}>{a.status}</span>{a.status === "Booked" && ["Admin", "Doctor"].includes(user.role) && <button className="tiny outline" onClick={() => completeAppointment(a._id)}>Complete</button>}{a.status === "Booked" && ["Admin", "Receptionist", "Patient"].includes(user.role) && <><button className="tiny outline" onClick={() => startReschedule(a)}>Reschedule</button><button className="tiny outline" onClick={() => cancelAppointment(a._id)}>Cancel</button></>}</div>)}
             {reschedulingAppointment && appointments.some(a => a._id === reschedulingAppointment) && <form className="reschedule-form" onSubmit={saveReschedule}>
               <label>New appointment time<input type="datetime-local" min={new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16)} value={rescheduleDate} onChange={e => setRescheduleDate(e.target.value)} required /></label>
               <button>Save new time</button><button type="button" className="outline" onClick={() => { setReschedulingAppointment(""); setRescheduleDate(""); }}>Cancel edit</button>
