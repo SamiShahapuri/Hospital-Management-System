@@ -3,7 +3,6 @@ import mongoose from "mongoose";
 import Appointment from "../models/Appointment.js";
 import Patient from "../models/Patient.js";
 import Doctor from "../models/Doctor.js";
-import User from "../models/User.js";
 import { authenticate, allowRoles } from "../middleware/auth.js";
 
 const router = Router();
@@ -47,8 +46,7 @@ router.get("/", allowRoles("Admin", "Doctor", "Receptionist", "Patient"), async 
       filter.patient = req.query.patient;
     }
     if (req.user.role === "Patient") {
-      const account = await User.findById(req.user.id).select("email");
-      const ownProfile = account?.email ? await Patient.findOne({ email: account.email }) : null;
+      const ownProfile = await Patient.findOne({ linkedUser: req.user.id });
       if (!ownProfile) return res.json([]);
       if (req.query.patient && String(ownProfile._id) !== String(req.query.patient)) {
         return res.status(403).json({ message: "You can only view your own appointments" });
