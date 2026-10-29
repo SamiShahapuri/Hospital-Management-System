@@ -168,6 +168,18 @@ export default function App() {
           </form>
         </div>}
 
+        {(user.role === "Admin" || user.role === "Doctor") && <div className="card quick-card">
+          <div className="section-head"><div><h2>Record diagnosis & treatment</h2><p className="muted">Add a clinical entry to the patient record</p></div></div>
+          <form className="quick-form" onSubmit={saveMedicalRecord}>
+            <select value={medicalForm.patient} onChange={e => setMedicalForm({ ...medicalForm, patient: e.target.value })} required>
+              <option value="">Choose patient</option>{patients.map(p => <option key={p._id} value={p._id}>{p.fullName}</option>)}
+            </select>
+            <input placeholder="Diagnosis" value={medicalForm.diagnosis} onChange={e => setMedicalForm({ ...medicalForm, diagnosis: e.target.value })} maxLength="300" required />
+            <textarea placeholder="Treatment plan" value={medicalForm.treatment} onChange={e => setMedicalForm({ ...medicalForm, treatment: e.target.value })} maxLength="1000" rows="2" required />
+            <textarea placeholder="Additional clinical note (optional)" value={medicalForm.note} onChange={e => setMedicalForm({ ...medicalForm, note: e.target.value })} maxLength="1000" rows="2" />
+            <button>Save clinical record</button>
+          </form>
+        </div>}
         {user.role === "Admin" && <div className="card quick-card">
           <div className="section-head"><div><h2>Manage departments</h2><p className="muted">Maintain hospital departments</p></div></div>
           <form className="quick-form" onSubmit={addDepartment}>
