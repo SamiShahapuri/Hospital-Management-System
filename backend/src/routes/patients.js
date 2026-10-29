@@ -8,9 +8,8 @@ router.use(authenticate);
 router.get("/", allowRoles("Admin", "Doctor", "Receptionist", "Patient"), async (req, res, next) => {
   try {
     const q = String(req.query.q || "").trim();
-    const filter = q ? { fullName: { $regex: q.replace(/[.*+?^$()|[\]\\{}]/g, "\\    const q = String(req.query.q || "").trim();
-    const filter = q ? { fullName: { $regex: q.replace(/[.*+?^$()|[\]\\{}]/g, "\\$&"), $options: "i" } } : {};
-    res.json(await Patient.find(filter).sort({ createdAt: -1 }).limit(100));"), $options: "i" } } : {};
+    const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const filter = q ? { fullName: { $regex: escaped, $options: "i" } } : {};
     if (req.user.role === "Patient") {
       const account = await User.findById(req.user.id).select("email");
       const ownProfile = account?.email ? await Patient.findOne({ email: account.email }) : null;
