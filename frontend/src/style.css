@@ -51,3 +51,16 @@ html{scroll-behavior:smooth;scroll-padding-top:18px}
 .edit-form{padding:12px;border:1px solid #e7edf2;background:#f8fbfc;border-radius:10px;margin-top:12px}
 .edit-form>strong{font-family:Manrope,sans-serif;font-size:12px;color:#334557}
 @media(max-width:420px){.manage-row{align-items:flex-start;flex-direction:column}.manage-actions{width:100%}}
+
+
+.patient-details-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:4px 0 18px}
+.patient-details-grid>div{display:grid;gap:4px;min-width:0}
+.patient-details-grid small,.detail-entry small{font-size:10px;color:#8795a4}
+.patient-details-grid strong{font-size:11px;color:#334557;overflow-wrap:anywhere;font-weight:600}
+.patient-details-grid .detail-wide{grid-column:1/-1}
+.detail-section{margin-top:16px}
+.detail-section h3{font-family:Manrope,sans-serif;font-size:13px;color:#334557;margin:0 0 8px}
+.detail-entry{display:grid;gap:4px;padding:10px 0;border-top:1px solid #edf0f4}
+.detail-entry strong{font-size:11px;color:#334557}
+.detail-entry span{font-size:11px;color:#667789;overflow-wrap:anywhere;white-space:pre-wrap}
+@media(max-width:420px){.patient-details-grid{grid-template-columns:1fr}}
