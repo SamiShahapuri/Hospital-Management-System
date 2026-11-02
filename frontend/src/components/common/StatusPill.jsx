@@ -1,0 +1,1 @@
+export default function StatusPill({ value }) { const key=String(value||"unknown").toLowerCase().replace(/\s+/g,"-"); const label=value==="Booked"?"Scheduled":value; return <span className={`status-pill ${key}`}>{label || "Unknown"}</span>; }
