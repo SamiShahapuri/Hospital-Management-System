@@ -5,6 +5,7 @@ import Patient from "../models/Patient.js";
 import Doctor from "../models/Doctor.js";
 import { authenticate, allowRoles } from "../middleware/auth.js";
 import { parseFutureDate } from "../utils/validation.js";
+import { syncAppointmentReminder } from "../services/appointmentReminders.js";
 
 const router = Router();
 router.use(authenticate);
