@@ -5,11 +5,18 @@ import Bill from "../models/Bill.js";
 import Patient from "../models/Patient.js";
 import Doctor from "../models/Doctor.js";
 import LabTest from "../models/LabTest.js";
+import AppointmentReminder from "../models/AppointmentReminder.js";
+import { generateAppointmentReminders } from "../services/appointmentReminders.js";
 
 const router = Router();
 router.use(authenticate);
 
-// Live, in-app reminders are derived from business records. They are not represented as sent email/SMS messages.
+// Generate due appointment reminders on demand as a safe, idempotent catch-up in addition to the background job.
+router.post("/jobs/appointment-reminders/run", allowRoles("Admin", "Receptionist"), async (req, res, next) => {
+  try { res.json(await generateAppointmentReminders()); } catch (error) { next(error); }
+});
+
+// Live lab and payment reminders remain derived from business records. Appointment reminders are persisted by the scheduler.
 router.get("/", allowRoles("Admin", "Doctor", "Receptionist", "Patient"), async (req, res, next) => {
   try {
     const now = new Date();
@@ -37,7 +44,14 @@ router.get("/", allowRoles("Admin", "Doctor", "Receptionist", "Patient"), async 
       labFilter.patient = { $in: await Appointment.distinct("patient", { doctor: doctor._id }) };
     }
 
-    const [appointments, unpaidBills, labTests] = await Promise.all([
+    const reminderFilter = { status: "Pending", scheduledAt: { $gt: now, $lte: until } };
+    if (ownPatient) reminderFilter.patient = ownPatient._id;
+    if (req.user.role === "Doctor") {
+      const ownDoctor = await Doctor.findOne({ linkedUser: req.user.id, active: true });
+      reminderFilter.doctor = ownDoctor?._id;
+    }
+
+    const [appointments, unpaidBills, labTests, appointmentReminders] = await Promise.all([
       Appointment.find(appointmentFilter)
         .populate("patient", "fullName")
         .populate("doctor", "fullName")
@@ -49,7 +63,8 @@ router.get("/", allowRoles("Admin", "Doctor", "Receptionist", "Patient"), async 
           .sort({ issuedAt: 1 })
           .limit(50)
         : Promise.resolve([]),
-      LabTest.find(labFilter).populate("patient", "fullName").sort({ scheduledAt: 1 }).limit(50)
+      LabTest.find(labFilter).populate("patient", "fullName").sort({ scheduledAt: 1 }).limit(50),
+      AppointmentReminder.find(reminderFilter).populate("patient", "fullName").populate("doctor", "fullName").sort({ scheduledAt: 1 }).limit(50)
     ]);
 
     const reminders = [
