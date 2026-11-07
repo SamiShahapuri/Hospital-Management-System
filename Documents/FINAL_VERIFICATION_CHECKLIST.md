@@ -16,6 +16,7 @@ Use a local demo database only. Do not enter real patient or clinical data. Reco
 
 - [ ] Sign in using `admin01` / `Admin@123` and `reception01` / `Recep@123` (or their seeded email aliases).
 - [ ] Sign in through `/doctor/login` using `drsmith` / `Doctor@123` or a newly created Doctor account.
+- [ ] Sign in through `/patient/login` using the test-plan account `patient01` / `Pat@1234`; confirm only the linked patient record is visible.
 - [ ] Confirm a Doctor created by Admin/Receptionist receives a Doctor-role account and can sign in at `/doctor/login`.
 - [ ] Confirm a person without a staff-created Patient record cannot activate a Patient login.
 - [ ] Register a patient as Admin/Receptionist, copy the generated Patient ID, then activate via `/patient/login` using matching ID, full name and registered email.

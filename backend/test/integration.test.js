@@ -96,6 +96,12 @@ test("MongoDB-backed API workflows: authentication, records, appointments, admis
   const admin = await login("admin01", "Admin@123");
   const receptionist = await login("reception01", "Recep@123");
   const doctorUser = await login("drsmith", "Doctor@123");
+  const seededPatientUser = await login("patient01", process.env.DEMO_PATIENT_PASSWORD || "Pat@1234");
+  assert.equal(seededPatientUser.user.role, "Patient");
+  const seededPatientProfiles = await request("/patients", { token: seededPatientUser.token });
+  assert.equal(seededPatientProfiles.status, 200);
+  assert.equal(seededPatientProfiles.data.length, 1);
+  assert.equal(String(seededPatientProfiles.data[0].linkedUser), seededPatientUser.user.id);
   const report = await request("/reports/summary", { token: admin.token });
   assert.equal(report.status, 200);
   assert.equal((await request("/reports/summary", { token: receptionist.token })).status, 403);
