@@ -9,6 +9,7 @@ const backendDir = path.resolve(here, "..");
 const enabled = process.env.HMS_INTEGRATION_TESTS === "1";
 const port = Number(process.env.HMS_TEST_PORT || 5100);
 const baseUrl = `http://127.0.0.1:${port}`;
+const serverStartupTimeoutMs = Number(process.env.HMS_SERVER_STARTUP_TIMEOUT_MS || 45_000);
 
 async function request(route, { token, method = "GET", body } = {}) {
   const headers = { "Content-Type": "application/json" };
@@ -74,15 +75,24 @@ test("MongoDB-backed API workflows: authentication, records, appointments, admis
   });
 
   let ready = false;
-  for (let attempt = 0; attempt < 60; attempt++) {
+  let lastHealthError = "";
+  const startupDeadline = Date.now() + serverStartupTimeoutMs;
+  while (Date.now() < startupDeadline) {
     if (server.exitCode !== null) break;
     try {
       const health = await fetch(`${baseUrl}/api/health`);
       if (health.ok) { ready = true; break; }
-    } catch {}
+      lastHealthError = `Health endpoint returned HTTP ${health.status}`;
+    } catch (error) {
+      lastHealthError = error.message;
+    }
     await new Promise(resolve => setTimeout(resolve, 250));
   }
-  assert.equal(ready, true, `API did not start. Server output: ${serverOutput()}`);
+  assert.equal(
+    ready,
+    true,
+    `API did not start within ${serverStartupTimeoutMs}ms. Last health error: ${lastHealthError}. Server output: ${serverOutput()}`
+  );
 
   const noAuth = await request("/patients");
   assert.equal(noAuth.status, 401);
