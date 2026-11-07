@@ -9,7 +9,12 @@ const backendDir = path.resolve(here, "..");
 const enabled = process.env.HMS_INTEGRATION_TESTS === "1";
 const port = Number(process.env.HMS_TEST_PORT || 5100);
 const baseUrl = `http://127.0.0.1:${port}`;
-const serverStartupTimeoutMs = Number(process.env.HMS_SERVER_STARTUP_TIMEOUT_MS || 45_000);
+const configuredStartupTimeout = process.env.HMS_SERVER_STARTUP_TIMEOUT_MS;
+const serverStartupTimeoutMs = configuredStartupTimeout === undefined ? 45_000 : Number(configuredStartupTimeout);
+
+if (!Number.isFinite(serverStartupTimeoutMs) || !Number.isInteger(serverStartupTimeoutMs) || serverStartupTimeoutMs <= 0) {
+  throw new Error("HMS_SERVER_STARTUP_TIMEOUT_MS must be a finite positive integer.");
+}
 
 async function request(route, { token, method = "GET", body } = {}) {
   const headers = { "Content-Type": "application/json" };
@@ -79,14 +84,18 @@ test("MongoDB-backed API workflows: authentication, records, appointments, admis
   const startupDeadline = Date.now() + serverStartupTimeoutMs;
   while (Date.now() < startupDeadline) {
     if (server.exitCode !== null) break;
+    const remainingMs = startupDeadline - Date.now();
     try {
-      const health = await fetch(`${baseUrl}/api/health`);
+      const health = await fetch(`${baseUrl}/api/health`, {
+        signal: AbortSignal.timeout(Math.max(1, Math.min(1_000, remainingMs)))
+      });
       if (health.ok) { ready = true; break; }
       lastHealthError = `Health endpoint returned HTTP ${health.status}`;
     } catch (error) {
       lastHealthError = error.message;
     }
-    await new Promise(resolve => setTimeout(resolve, 250));
+    const retryDelayMs = Math.min(250, Math.max(0, startupDeadline - Date.now()));
+    if (retryDelayMs > 0) await new Promise(resolve => setTimeout(resolve, retryDelayMs));
   }
   assert.equal(
     ready,
@@ -113,11 +122,12 @@ test("MongoDB-backed API workflows: authentication, records, appointments, admis
   assert.equal((await request("/billing", { token: doctorUser.token })).status, 403);
 
   const suffix = `${Date.now()}`;
+  const phoneSuffix = suffix.slice(-8).padStart(8, "0");
   const patientPayload = {
     fullName: `Integration Patient ${suffix}`,
     age: 34,
     gender: "Male",
-    phone: "+91 98765 43210",
+    phone: `+91 98${phoneSuffix}`,
     email: `integration-${suffix}@example.com`,
     address: "Integration test address"
   };
@@ -238,12 +248,12 @@ test("MongoDB-backed API workflows: authentication, records, appointments, admis
 
   const guestBooking = await request("/public/book-appointment", {
     method: "POST",
-    body: { fullName: `Guest Booking ${suffix}`, email: `guest-${suffix}@example.com`, phone: "+91 91234 56789", doctor: doctorId, scheduledAt: indiaDate(10, 14, 0), reason: "Guest flow integration" }
+    body: { fullName: `Guest Booking ${suffix}`, email: `guest-${suffix}@example.com`, phone: `+91 97${phoneSuffix}`, doctor: doctorId, scheduledAt: indiaDate(10, 14, 0), reason: "Guest flow integration" }
   });
   assert.equal(guestBooking.status, 201, JSON.stringify(guestBooking.data));
   const guestCollision = await request("/public/book-appointment", {
     method: "POST",
-    body: { fullName: `Another Guest ${suffix}`, email: `guest2-${suffix}@example.com`, phone: "+91 91234 56780", doctor: doctorId, scheduledAt: indiaDate(10, 14, 0) }
+    body: { fullName: `Another Guest ${suffix}`, email: `guest2-${suffix}@example.com`, phone: `+91 96${phoneSuffix}`, doctor: doctorId, scheduledAt: indiaDate(10, 14, 0) }
   });
   assert.equal(guestCollision.status, 409);
 
@@ -373,7 +383,7 @@ test("MongoDB-backed API workflows: authentication, records, appointments, admis
     age: 28,
     gender: "Female",
     email: `self-${suffix}@example.com`,
-    phone: `+91 90000 ${suffix.slice(-5)}`,
+    phone: `+91 95${phoneSuffix}`,
     address: "Account activation test address"
   };
   const accountPatient = await request("/patients", { token: receptionist.token, method: "POST", body: accountPatientPayload });
