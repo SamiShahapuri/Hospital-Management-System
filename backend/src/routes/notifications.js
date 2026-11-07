@@ -21,11 +21,7 @@ router.get("/", allowRoles("Admin", "Doctor", "Receptionist", "Patient"), async 
   try {
     const now = new Date();
     const until = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-    const recentlyChanged = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-    const appointmentFilter = { status: { $in: ["Booked", "Confirmed"] }, scheduledAt: { $gt: now }, $or: [
-      { scheduledAt: { $gte: now, $lte: until } },
-      { updatedAt: { $gte: recentlyChanged } }
-    ] };
+
     const labFilter = { status: "Scheduled", scheduledAt: { $gt: now }, $or: [
       { scheduledAt: { $gte: now, $lte: until } },
       { createdAt: { $gte: recentlyChanged } }
@@ -35,12 +31,10 @@ router.get("/", allowRoles("Admin", "Doctor", "Receptionist", "Patient"), async 
     if (req.user.role === "Patient") {
       ownPatient = await Patient.findOne({ linkedUser: req.user.id });
       if (!ownPatient) return res.json([]);
-      appointmentFilter.patient = ownPatient._id;
       labFilter.patient = ownPatient._id;
     } else if (req.user.role === "Doctor") {
       const doctor = await Doctor.findOne({ linkedUser: req.user.id, active: true });
       if (!doctor) return res.json([]);
-      appointmentFilter.doctor = doctor._id;
       labFilter.patient = { $in: await Appointment.distinct("patient", { doctor: doctor._id }) };
     }
 
@@ -51,12 +45,7 @@ router.get("/", allowRoles("Admin", "Doctor", "Receptionist", "Patient"), async 
       reminderFilter.doctor = ownDoctor?._id;
     }
 
-    const [appointments, unpaidBills, labTests, appointmentReminders] = await Promise.all([
-      Appointment.find(appointmentFilter)
-        .populate("patient", "fullName")
-        .populate("doctor", "fullName")
-        .sort({ scheduledAt: 1 })
-        .limit(50),
+    const [unpaidBills, labTests, appointmentReminders] = await Promise.all([
       req.user.role === "Admin" || req.user.role === "Receptionist" || req.user.role === "Patient"
         ? Bill.find({ status: { $in: ["Unpaid", "Partially Paid"] }, dueAt: { $gte: now, $lte: until }, ...(ownPatient ? { patient: ownPatient._id } : {}) })
           .populate("patient", "fullName")
@@ -64,7 +53,6 @@ router.get("/", allowRoles("Admin", "Doctor", "Receptionist", "Patient"), async 
           .limit(50)
         : Promise.resolve([]),
       LabTest.find(labFilter).populate("patient", "fullName").sort({ scheduledAt: 1 }).limit(50),
-      AppointmentReminder.find(reminderFilter).populate("patient", "fullName").populate("doctor", "fullName").sort({ scheduledAt: 1 }).limit(50),
       AppointmentReminder.find(reminderFilter).populate("patient", "fullName").populate("doctor", "fullName").sort({ scheduledAt: 1 }).limit(50)
     ]);
 
@@ -76,13 +64,6 @@ router.get("/", allowRoles("Admin", "Doctor", "Receptionist", "Patient"), async 
         dueAt: reminder.scheduledAt,
         recordId: String(reminder.appointment),
         status: reminder.status
-      })),
-      ...appointments.filter(appointment => !appointmentReminders.some(reminder => String(reminder.appointment) === String(appointment._id))).map(appointment => ({
-        id: `appointment-${appointment._id}`,
-        type: "Appointment reminder",
-        message: `${appointment.patient?.fullName || "Patient"} with ${appointment.doctor?.fullName || "doctor"}`,
-        dueAt: appointment.scheduledAt,
-        recordId: String(appointment._id)
       })),
       ...labTests.map(test => ({
         id: `lab-${test._id}`,
