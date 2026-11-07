@@ -254,5 +254,8 @@ test("login accepts username aliases for test-plan accounts", () => {
   assert.ok(seed.includes('username: "admin01"'));
   assert.ok(seed.includes('username: "reception01"'));
   assert.ok(seed.includes('username: "drsmith"'));
+  assert.ok(seed.includes('username: "patient01"'));
+  assert.ok(seed.includes('DEMO_PATIENT_PASSWORD || "Pat@1234"'));
+  assert.ok(seed.includes("patients[0].linkedUser = patientAccount._id"));
   assert.ok(seed.includes('"Admin@123"'));
 });

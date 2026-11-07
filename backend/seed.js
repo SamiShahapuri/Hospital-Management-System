@@ -106,7 +106,7 @@ async function main() {
   }
 
   const patientSpecs = [
-    { fullName: "Aarav Kumar", phone: "9000000001", email: "aarav.demo@example.com", address: "Demo address 1" },
+    { fullName: "Aarav Kumar", phone: "9000000001", email: process.env.DEMO_PATIENT_EMAIL || "aarav.demo@example.com", address: "Demo address 1" },
     { fullName: "Diya Sharma", phone: "9000000002", email: "diya.demo@example.com", address: "Demo address 2" },
     { fullName: "Rohan Patel", phone: "9000000003", email: "rohan.demo@example.com", address: "Demo address 3" }
   ];
@@ -122,6 +122,21 @@ async function main() {
       await patient.save();
     }
     patients.push(patient);
+  }
+
+  // Keep one existing hospital record activated for the submitted UT_M1_06
+  // credentials. Other seeded patient records still exercise first-time activation.
+  const patientPassword = process.env.DEMO_PATIENT_PASSWORD || "Pat@1234";
+  const patientAccount = await upsertUser({
+    name: patients[0].fullName,
+    email: patients[0].email,
+    password: patientPassword,
+    role: "Patient",
+    username: "patient01"
+  });
+  if (String(patients[0].linkedUser || "") !== String(patientAccount._id)) {
+    patients[0].linkedUser = patientAccount._id;
+    await patients[0].save();
   }
 
   const existingDemoAppointment = await Appointment.findOne({ reason: "Seeded demonstration appointment" });
@@ -150,7 +165,8 @@ async function main() {
   console.log(`Doctor 4: rahul.menon or rahul.menon@citycare.demo / ${doctorPassword} (Dr. Rahul Menon)`);
   console.log(`Doctor 5: asha.kulkarni or asha.kulkarni@citycare.demo / ${doctorPassword} (Dr. Asha Kulkarni)`);
   console.log(`Doctor 6: vivek.rao or vivek.rao@citycare.demo / ${doctorPassword} (Dr. Vivek Rao)`);
-  console.log("Seed patient accounts are not activated until the patient uses their Patient ID and registered email.");
+  console.log(`Patient: patient01 or ${patients[0].email} / ${patientPassword} (${patients[0].fullName}, ${patients[0].patientId})`);
+  console.log("The other seeded patient records are not activated until the patient uses their Patient ID and registered email.");
   patients.forEach(patient => console.log(`Patient record: ${patient.patientId} · ${patient.fullName} · ${patient.email}`));
   console.log("Use these credentials only in a local demo environment. Change them before any deployment.");
 }
