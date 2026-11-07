@@ -21,6 +21,7 @@ router.get("/", allowRoles("Admin", "Doctor", "Receptionist", "Patient"), async 
   try {
     const now = new Date();
     const until = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    const recentlyChanged = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
     const labFilter = { status: "Scheduled", scheduledAt: { $gt: now }, $or: [
       { scheduledAt: { $gte: now, $lte: until } },
