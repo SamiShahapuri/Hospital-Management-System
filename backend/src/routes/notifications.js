@@ -64,11 +64,20 @@ router.get("/", allowRoles("Admin", "Doctor", "Receptionist", "Patient"), async 
           .limit(50)
         : Promise.resolve([]),
       LabTest.find(labFilter).populate("patient", "fullName").sort({ scheduledAt: 1 }).limit(50),
+      AppointmentReminder.find(reminderFilter).populate("patient", "fullName").populate("doctor", "fullName").sort({ scheduledAt: 1 }).limit(50),
       AppointmentReminder.find(reminderFilter).populate("patient", "fullName").populate("doctor", "fullName").sort({ scheduledAt: 1 }).limit(50)
     ]);
 
     const reminders = [
-      ...appointments.map(appointment => ({
+      ...appointmentReminders.map(reminder => ({
+        id: String(reminder._id),
+        type: "Appointment reminder",
+        message: reminder.message,
+        dueAt: reminder.scheduledAt,
+        recordId: String(reminder.appointment),
+        status: reminder.status
+      })),
+      ...appointments.filter(appointment => !appointmentReminders.some(reminder => String(reminder.appointment) === String(appointment._id))).map(appointment => ({
         id: `appointment-${appointment._id}`,
         type: "Appointment reminder",
         message: `${appointment.patient?.fullName || "Patient"} with ${appointment.doctor?.fullName || "doctor"}`,
