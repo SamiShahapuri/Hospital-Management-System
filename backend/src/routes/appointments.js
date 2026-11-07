@@ -277,6 +277,7 @@ router.patch("/:id/no-show", allowRoles("Admin", "Doctor", "Receptionist"), asyn
     }
     const appointment = await Appointment.findOneAndUpdate(filter, { $set: { status: "No-show" } }, { new: true }).populate("patient", "fullName phone").populate("doctor", "fullName specialization department");
     if (!appointment) return res.status(404).json({ message: "Booked appointment not found" });
+    await syncAppointmentReminder(appointment);
     res.json(appointment);
   } catch (error) { next(error); }
 });
