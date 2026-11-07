@@ -8,7 +8,7 @@
     "start": "node src/server.js",
     "test": "node --test",
     "seed": "node seed.js",
-    "test:integration": "node --test test/integration.test.js"
+    "test:integration": "node --test test/integration.test.js test/appointment-reminders.test.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

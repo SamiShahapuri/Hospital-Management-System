@@ -5,6 +5,7 @@ import Patient from "../models/Patient.js";
 import Doctor from "../models/Doctor.js";
 import { authenticate, allowRoles } from "../middleware/auth.js";
 import { parseFutureDate } from "../utils/validation.js";
+import { syncAppointmentReminder } from "../services/appointmentReminders.js";
 
 const router = Router();
 router.use(authenticate);
@@ -146,10 +147,12 @@ router.post("/", allowRoles("Admin", "Receptionist", "Patient"), async (req, res
     const appointment = await Appointment.create({
       patient, doctor, scheduledAt: date, durationMinutes, slotKeys: createSlotKeys(date, durationMinutes), reason: reason.trim(), createdBy: req.user.id
     });
-    res.status(201).json(await appointment.populate([
+    await appointment.populate([
       { path: "patient", select: "fullName phone" },
       { path: "doctor", select: "fullName specialization department" }
-    ]));
+    ]);
+    await syncAppointmentReminder(appointment);
+    res.status(201).json(appointment);
   } catch (error) {
     // The unique partial index is the race-safe guard; translate its conflict to HTTP 409.
     if (error.code === 11000) {
@@ -197,6 +200,7 @@ router.patch("/:id/reschedule", allowRoles("Admin", "Receptionist", "Patient"), 
       { new: true, runValidators: true }
     ).populate("patient", "fullName phone").populate("doctor", "fullName specialization department");
     if (!updated) return res.status(409).json({ message: "Appointment changed before it could be rescheduled" });
+    await syncAppointmentReminder(updated);
     res.json(updated);
   } catch (error) {
     if (error.code === 11000) {
@@ -226,6 +230,7 @@ router.patch("/:id/cancel", allowRoles("Admin", "Receptionist", "Patient"), asyn
       { path: "patient", select: "fullName phone" },
       { path: "doctor", select: "fullName specialization department" }
     ]);
+    await syncAppointmentReminder(appointment);
     res.json(appointment);
   } catch (error) { next(error); }
 });
@@ -245,6 +250,7 @@ router.patch("/:id/complete", allowRoles("Admin", "Doctor"), async (req, res, ne
       { new: true, runValidators: true }
     ).populate("patient", "fullName phone").populate("doctor", "fullName specialization department");
     if (!appointment) return res.status(404).json({ message: "Booked appointment not found" });
+    await syncAppointmentReminder(appointment);
     res.json(appointment);
   } catch (error) { next(error); }
 });
@@ -255,6 +261,7 @@ router.patch("/:id/confirm", allowRoles("Admin", "Receptionist"), async (req, re
     if (!isValidId(req.params.id)) return res.status(400).json({ message: "Invalid appointment ID" });
     const appointment = await Appointment.findOneAndUpdate({ _id: req.params.id, status: "Booked" }, { $set: { status: "Confirmed" } }, { new: true }).populate("patient", "fullName phone").populate("doctor", "fullName specialization department");
     if (!appointment) return res.status(409).json({ message: "Only scheduled appointments can be confirmed" });
+    await syncAppointmentReminder(appointment);
     res.json(appointment);
   } catch (error) { next(error); }
 });
@@ -270,6 +277,7 @@ router.patch("/:id/no-show", allowRoles("Admin", "Doctor", "Receptionist"), asyn
     }
     const appointment = await Appointment.findOneAndUpdate(filter, { $set: { status: "No-show" } }, { new: true }).populate("patient", "fullName phone").populate("doctor", "fullName specialization department");
     if (!appointment) return res.status(404).json({ message: "Booked appointment not found" });
+    await syncAppointmentReminder(appointment);
     res.json(appointment);
   } catch (error) { next(error); }
 });
