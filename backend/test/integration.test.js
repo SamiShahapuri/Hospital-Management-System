@@ -105,15 +105,52 @@ test("MongoDB-backed API workflows: authentication, records, appointments, admis
 
   const noAuth = await request("/patients");
   assert.equal(noAuth.status, 401);
-  const missingLogin = await request("/auth/login", { method: "POST", body: { email: "", password: "" } });
-  assert.equal(missingLogin.status, 400);
-  const invalidLogin = await request("/auth/login", { method: "POST", body: { email: "admin@example.com", password: "wrong-password" } });
-  assert.equal(invalidLogin.status, 401);
   const badToken = await request("/reports/summary", { token: "not-a-valid-token" });
   assert.equal(badToken.status, 401);
 
-  const admin = await login("admin01", "Admin@123");
-  const receptionist = await login("reception01", "Recep@123");
+  let admin;
+  await t.test("UT_M1_01 valid Admin credentials open the Admin workspace", async () => {
+    admin = await login("admin01", "Admin@123");
+    assert.equal(admin.user.role, "Admin");
+    const report = await request("/reports/summary", { token: admin.token });
+    assert.equal(report.status, 200);
+  });
+
+  await t.test("UT_M1_02 invalid Admin password is rejected", async () => {
+    const invalidLogin = await request("/auth/login", {
+      method: "POST",
+      body: { username: "admin01", password: "wrongpass" }
+    });
+    assert.equal(invalidLogin.status, 401);
+    assert.equal(invalidLogin.data.message, "Invalid email or password");
+  });
+
+  await t.test("UT_M1_03 blank username and password are rejected", async () => {
+    const missingLogin = await request("/auth/login", {
+      method: "POST",
+      body: { username: "", password: "" }
+    });
+    assert.equal(missingLogin.status, 400);
+    assert.equal(missingLogin.data.message, "Username/email and password are required");
+  });
+
+  let receptionist;
+  await t.test("IT_M1_01 Receptionist is denied the Admin-only Reports module", async () => {
+    receptionist = await login("reception01", "Recep@123");
+    const forbiddenReport = await request("/reports/summary", { token: receptionist.token });
+    assert.equal(forbiddenReport.status, 403);
+    assert.equal(forbiddenReport.data.message, "You do not have permission for this action");
+  });
+
+  await t.test("IT_M1_02 logout revokes the previous session", async () => {
+    const session = await login("patient01", process.env.DEMO_PATIENT_PASSWORD || "Pat@1234");
+    const signedOut = await request("/auth/logout", { token: session.token, method: "POST" });
+    assert.equal(signedOut.status, 200);
+    const afterLogout = await request("/patients", { token: session.token });
+    assert.equal(afterLogout.status, 401);
+    assert.equal(afterLogout.data.message, "Session has expired. Please sign in again.");
+  });
+
   const doctorUser = await login("drsmith", "Doctor@123");
   const seededPatientUser = await login("patient01", process.env.DEMO_PATIENT_PASSWORD || "Pat@1234");
   assert.equal(seededPatientUser.user.role, "Patient");
@@ -121,9 +158,6 @@ test("MongoDB-backed API workflows: authentication, records, appointments, admis
   assert.equal(seededPatientProfiles.status, 200);
   assert.equal(seededPatientProfiles.data.length, 1);
   assert.equal(String(seededPatientProfiles.data[0].linkedUser), seededPatientUser.user.id);
-  const report = await request("/reports/summary", { token: admin.token });
-  assert.equal(report.status, 200);
-  assert.equal((await request("/reports/summary", { token: receptionist.token })).status, 403);
   assert.equal((await request("/departments", { token: receptionist.token, method: "POST", body: { name: "Not Allowed" } })).status, 403);
   assert.equal((await request("/billing", { token: doctorUser.token })).status, 403);
 
