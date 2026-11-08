@@ -163,3 +163,22 @@ test("UT_M4_04 — Cancel an existing appointment", {
     assert.equal(stored.status, "Cancelled", "cancellation status must persist in MongoDB");
   } finally { await cleanupFixture(fixture); }
 });
+
+test("UT_M4_05 — Reject an appointment with a past date", {
+  skip: !enabled ? "Set HMS_M4_INTEGRATION_TESTS=1 and MONGODB_URI to the dedicated M4 database." : false,
+  timeout: 45_000
+}, async () => {
+  let fixture;
+  try {
+    fixture = await createFixture("UT_M4_05");
+    const pastTime = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const result = await request("/appointments", {
+      token: fixture.token, method: "POST",
+      body: { patient: String(fixture.patient._id), doctor: String(fixture.doctor._id), scheduledAt: pastTime, reason: "UT_M4_05 past date" }
+    });
+    assert.equal(result.status, 400, JSON.stringify(result.data));
+    assert.match(result.data.message, /future date and time/i);
+    assert.equal(await Appointment.countDocuments({ patient: fixture.patient._id, doctor: fixture.doctor._id }), 0,
+      "past appointment must not be persisted");
+  } finally { await cleanupFixture(fixture); }
+});
