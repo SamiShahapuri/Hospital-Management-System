@@ -182,3 +182,41 @@ test("UT_M4_05 — Reject an appointment with a past date", {
       "past appointment must not be persisted");
   } finally { await cleanupFixture(fixture); }
 });
+
+
+test("UT_M4_02 — Reject a second active appointment in the same doctor time slot", {
+  skip: !enabled ? "Set HMS_M4_INTEGRATION_TESTS=1 and MONGODB_URI to the dedicated M4 database." : false,
+  timeout: 45_000
+}, async () => {
+  let fixture;
+  try {
+    fixture = await createFixture("UT_M4_02");
+    const scheduledAt = futureIndiaDate(12, 10, 30);
+    const bookingBody = {
+      patient: String(fixture.patient._id),
+      doctor: String(fixture.doctor._id),
+      scheduledAt,
+      reason: "UT_M4_02 first booking"
+    };
+
+    const firstBooking = await request("/appointments", {
+      token: fixture.token, method: "POST", body: bookingBody
+    });
+    assert.equal(firstBooking.status, 201, JSON.stringify(firstBooking.data));
+
+    const duplicateBooking = await request("/appointments", {
+      token: fixture.token, method: "POST",
+      body: { ...bookingBody, reason: "UT_M4_02 duplicate booking" }
+    });
+    assert.equal(duplicateBooking.status, 409, JSON.stringify(duplicateBooking.data));
+    assert.match(duplicateBooking.data.message, /slot|appointment/i);
+
+    const activeAppointments = await Appointment.find({
+      doctor: fixture.doctor._id,
+      scheduledAt: new Date(scheduledAt),
+      status: { $in: ["Booked", "Confirmed"] }
+    }).lean();
+    assert.equal(activeAppointments.length, 1, "only the original active appointment may remain for the doctor's slot");
+    assert.equal(String(activeAppointments[0]._id), firstBooking.data._id);
+  } finally { await cleanupFixture(fixture); }
+});
