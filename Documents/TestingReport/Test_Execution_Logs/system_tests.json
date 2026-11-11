@@ -1,0 +1,112 @@
+{
+  "executedAt": "2026-11-11T07:54:59.849Z",
+  "baseUrl": "http://localhost:5174",
+  "apiUrl": "http://localhost:5200/api",
+  "total": 12,
+  "passed": 12,
+  "failed": 0,
+  "browserErrors": [
+    "console: Failed to load resource: net::ERR_NETWORK_ACCESS_DENIED",
+    "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "console: Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "console: Failed to load resource: net::ERR_NETWORK_ACCESS_DENIED",
+    "console: Failed to load resource: net::ERR_NETWORK_ACCESS_DENIED",
+    "console: Failed to load resource: net::ERR_NETWORK_ACCESS_DENIED",
+    "console: Failed to load resource: net::ERR_NETWORK_ACCESS_DENIED",
+    "console: Failed to load resource: net::ERR_NETWORK_ACCESS_DENIED",
+    "console: Failed to load resource: net::ERR_NETWORK_ACCESS_DENIED",
+    "console: Failed to load resource: net::ERR_NETWORK_ACCESS_DENIED",
+    "console: Failed to load resource: net::ERR_NETWORK_ACCESS_DENIED",
+    "console: Failed to load resource: net::ERR_NETWORK_ACCESS_DENIED",
+    "console: Failed to load resource: net::ERR_NETWORK_ACCESS_DENIED",
+    "console: Failed to load resource: net::ERR_NETWORK_ACCESS_DENIED",
+    "console: Failed to load resource: net::ERR_NETWORK_ACCESS_DENIED",
+    "console: Failed to load resource: net::ERR_NETWORK_ACCESS_DENIED"
+  ],
+  "results": [
+    {
+      "id": "ST-AUTH-NEG-01",
+      "description": "Invalid staff login displays an error",
+      "status": "PASS",
+      "actual": "Invalid credentials were rejected with the expected visible error.",
+      "evidence": "Screenshots/01-invalid-login.png"
+    },
+    {
+      "id": "ST-ADMIN-01",
+      "description": "Admin login and dashboard",
+      "status": "PASS",
+      "actual": "Admin dashboard loaded after credential authentication.",
+      "evidence": "Screenshots/02-admin-dashboard.png"
+    },
+    {
+      "id": "ST-ADMIN-DEPT-01",
+      "description": "Admin creates, updates, and deactivates a department",
+      "status": "PASS",
+      "actual": "Department create, rename, and deactivate operations persisted through the UI.",
+      "evidence": "Screenshots/03-departments-after-crud.png"
+    },
+    {
+      "id": "ST-ADMIN-DOCTOR-01",
+      "description": "Admin creates, updates availability, and deactivates a doctor",
+      "status": "PASS",
+      "actual": "Doctor account creation, 45-minute duration update, and deactivation succeeded.",
+      "evidence": "Screenshots/04-doctors-after-crud.png"
+    },
+    {
+      "id": "ST-ADMIN-PATIENT-01",
+      "description": "Admin registers and updates a patient",
+      "status": "PASS",
+      "actual": "Patient registration produced a Patient ID and the updated phone persisted.",
+      "evidence": "Screenshots/05-patient-created-and-updated.png"
+    },
+    {
+      "id": "ST-ADMIN-REPORTS-01",
+      "description": "Admin reports page loads current persisted data",
+      "status": "PASS",
+      "actual": "Reports workspace rendered for Admin with live summary content.",
+      "evidence": "Screenshots/06-admin-reports.png"
+    },
+    {
+      "id": "ST-RECEPTION-01",
+      "description": "Receptionist login and Admin route denial",
+      "status": "PASS",
+      "actual": "Receptionist dashboard loaded and direct Admin report access redirected to the role dashboard.",
+      "evidence": "Screenshots/07-receptionist-dashboard.png"
+    },
+    {
+      "id": "ST-DOCTOR-01",
+      "description": "Doctor login, dashboard, appointments, and patient workspace",
+      "status": "PASS",
+      "actual": "Doctor-specific dashboard, own appointments, and assigned-patient pages rendered.",
+      "evidence": "Screenshots/08-doctor-dashboard.png"
+    },
+    {
+      "id": "ST-PATIENT-01",
+      "description": "Patient login and scoped portal pages",
+      "status": "PASS",
+      "actual": "Patient dashboard, medical records, prescriptions, and billing pages rendered for the linked profile.",
+      "evidence": "Screenshots/09-patient-dashboard.png"
+    },
+    {
+      "id": "ST-GUEST-01",
+      "description": "Guest books an appointment without creating a login",
+      "status": "PASS",
+      "actual": "Guest confirmation rendered; patient record persisted; login remained unavailable.",
+      "evidence": "Screenshots/10-guest-booking-confirmation.png"
+    },
+    {
+      "id": "ST-GUEST-NEG-01",
+      "description": "Duplicate guest slot is rejected",
+      "status": "PASS",
+      "actual": "Second booking received HTTP 409: That time slot overlaps an existing appointment. Please choose another time.",
+      "evidence": "Test_Execution_Logs/system_tests.log"
+    },
+    {
+      "id": "ST-RESPONSIVE-01",
+      "description": "Guest booking page renders at mobile viewport",
+      "status": "PASS",
+      "actual": "Mobile viewport rendered without horizontal document overflow.",
+      "evidence": "Screenshots/11-mobile-guest-booking.png"
+    }
+  ]
+}

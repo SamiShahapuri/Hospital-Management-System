@@ -1,0 +1,70 @@
+Hospital Management System browser tests
+Executed: 2026-11-11T07:54:59.849Z
+Target: http://localhost:5174
+Total: 12 Passed: 12 Failed: 0
+
+PASS ST-AUTH-NEG-01 - Invalid staff login displays an error
+Actual: Invalid credentials were rejected with the expected visible error.
+Evidence: Screenshots/01-invalid-login.png
+
+PASS ST-ADMIN-01 - Admin login and dashboard
+Actual: Admin dashboard loaded after credential authentication.
+Evidence: Screenshots/02-admin-dashboard.png
+
+PASS ST-ADMIN-DEPT-01 - Admin creates, updates, and deactivates a department
+Actual: Department create, rename, and deactivate operations persisted through the UI.
+Evidence: Screenshots/03-departments-after-crud.png
+
+PASS ST-ADMIN-DOCTOR-01 - Admin creates, updates availability, and deactivates a doctor
+Actual: Doctor account creation, 45-minute duration update, and deactivation succeeded.
+Evidence: Screenshots/04-doctors-after-crud.png
+
+PASS ST-ADMIN-PATIENT-01 - Admin registers and updates a patient
+Actual: Patient registration produced a Patient ID and the updated phone persisted.
+Evidence: Screenshots/05-patient-created-and-updated.png
+
+PASS ST-ADMIN-REPORTS-01 - Admin reports page loads current persisted data
+Actual: Reports workspace rendered for Admin with live summary content.
+Evidence: Screenshots/06-admin-reports.png
+
+PASS ST-RECEPTION-01 - Receptionist login and Admin route denial
+Actual: Receptionist dashboard loaded and direct Admin report access redirected to the role dashboard.
+Evidence: Screenshots/07-receptionist-dashboard.png
+
+PASS ST-DOCTOR-01 - Doctor login, dashboard, appointments, and patient workspace
+Actual: Doctor-specific dashboard, own appointments, and assigned-patient pages rendered.
+Evidence: Screenshots/08-doctor-dashboard.png
+
+PASS ST-PATIENT-01 - Patient login and scoped portal pages
+Actual: Patient dashboard, medical records, prescriptions, and billing pages rendered for the linked profile.
+Evidence: Screenshots/09-patient-dashboard.png
+
+PASS ST-GUEST-01 - Guest books an appointment without creating a login
+Actual: Guest confirmation rendered; patient record persisted; login remained unavailable.
+Evidence: Screenshots/10-guest-booking-confirmation.png
+
+PASS ST-GUEST-NEG-01 - Duplicate guest slot is rejected
+Actual: Second booking received HTTP 409: That time slot overlaps an existing appointment. Please choose another time.
+Evidence: Test_Execution_Logs/system_tests.log
+
+PASS ST-RESPONSIVE-01 - Guest booking page renders at mobile viewport
+Actual: Mobile viewport rendered without horizontal document overflow.
+Evidence: Screenshots/11-mobile-guest-booking.png
+
+Browser errors:
+console: Failed to load resource: net::ERR_NETWORK_ACCESS_DENIED
+console: Failed to load resource: the server responded with a status of 404 (Not Found)
+console: Failed to load resource: the server responded with a status of 401 (Unauthorized)
+console: Failed to load resource: net::ERR_NETWORK_ACCESS_DENIED
+console: Failed to load resource: net::ERR_NETWORK_ACCESS_DENIED
+console: Failed to load resource: net::ERR_NETWORK_ACCESS_DENIED
+console: Failed to load resource: net::ERR_NETWORK_ACCESS_DENIED
+console: Failed to load resource: net::ERR_NETWORK_ACCESS_DENIED
+console: Failed to load resource: net::ERR_NETWORK_ACCESS_DENIED
+console: Failed to load resource: net::ERR_NETWORK_ACCESS_DENIED
+console: Failed to load resource: net::ERR_NETWORK_ACCESS_DENIED
+console: Failed to load resource: net::ERR_NETWORK_ACCESS_DENIED
+console: Failed to load resource: net::ERR_NETWORK_ACCESS_DENIED
+console: Failed to load resource: net::ERR_NETWORK_ACCESS_DENIED
+console: Failed to load resource: net::ERR_NETWORK_ACCESS_DENIED
+console: Failed to load resource: net::ERR_NETWORK_ACCESS_DENIED

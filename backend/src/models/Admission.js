@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const admissionSchema = new mongoose.Schema({
   patient: { type: mongoose.Schema.Types.ObjectId, ref: "Patient", required: true, index: true },
-  bed: { type: mongoose.Schema.Types.ObjectId, ref: "Bed", default: null, index: true },
+  bed: { type: mongoose.Schema.Types.ObjectId, ref: "Bed", default: null },
   roomNumber: { type: String, trim: true, maxlength: 30, required: function () { return !this.bed; } },
   bedNumber: { type: String, trim: true, maxlength: 30, required: function () { return !this.bed; } },
   status: { type: String, enum: ["Admitted", "Discharged"], default: "Admitted", index: true },

@@ -31,7 +31,7 @@ function getHospitalScheduleParts(date) {
   };
 }
 
-function createSlotKeys(start, durationMinutes) {
+export function createSlotKeys(start, durationMinutes) {
   const keys = [];
   for (let offset = 0; offset < durationMinutes; offset += 1) {
     const point = new Date(start.getTime() + offset * 60000);
@@ -40,7 +40,7 @@ function createSlotKeys(start, durationMinutes) {
   return keys;
 }
 
-function doctorAcceptsTime(doctor, date, duration) {
+export function doctorAcceptsTime(doctor, date, duration) {
   const { dayOfWeek, hour, minute } = getHospitalScheduleParts(date);
   const start = hour * 60 + minute;
   const end = start + duration;

@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import Patient from "../models/Patient.js";
 import { authenticate } from "../middleware/auth.js";
+import { isValidPassword } from "../utils/validation.js";
 
 const router = Router();
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -19,7 +20,7 @@ router.post("/register", async (req, res, next) => {
     const username = requestedUsername || `patient-${patientId.replace(/^PT-?/i, "").toLowerCase()}`;
 
     if (!patientId || !name || name.length > 120 || !emailPattern.test(email) || email.length > 254 ||
-        !/^[a-z0-9._-]{3,32}$/.test(username) || password.length < 8 || password.length > 128) {
+        !/^[a-z0-9._-]{3,32}$/.test(username) || !isValidPassword(password)) {
       return res.status(400).json({
         message: "Enter your existing Patient ID, full name, registered email, and a password between 8 and 128 characters."
       });

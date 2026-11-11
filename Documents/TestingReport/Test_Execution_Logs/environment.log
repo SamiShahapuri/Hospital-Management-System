@@ -1,0 +1,15 @@
+Execution date (Asia/Calcutta): 2026-11-11
+OS: Microsoft Windows NT 10.0.26300.0 (64-bit process)
+CPU: Intel64 Family 6 Model 186 Stepping 2, GenuineIntel
+RAM: not exposed by the managed test environment
+Node: v22.20.0
+npm: 10.9.3
+MongoDB: db version v8.2.1
+MongoDB service: Running
+Chrome: 157.0.8103.50
+Playwright: 1.62.1 (bundled runtime)
+Frontend: React 18.3.1 / Vite 6.4.5
+Backend: Express 4.21.2 / Mongoose 8.9.5
+Test DBs: hms_testing_report_20261111; hms_system_testing_20261111
+Docker: unavailable
+Computer Use browser host: unavailable; bundled Playwright + installed Chrome used

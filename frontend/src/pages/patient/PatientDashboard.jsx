@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { api } from "../../api";
-import { Avatar, ProfileEditor, AppointmentRow, localDateTime, dateLabel, timeLabel } from "../../components/role/RoleWidgets.jsx";
+import { Avatar, PageHeader, ProfileEditor, AppointmentRow, localDateTime, dateLabel, timeLabel } from "../../components/role/RoleWidgets.jsx";
 
 export default function PatientDashboard({ user, onLogout }) {
   const [profile, setProfile] = useState(null);
