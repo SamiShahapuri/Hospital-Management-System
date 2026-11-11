@@ -15,7 +15,7 @@ function Status({ value }) {
   return <span className={`status-tag ${key}`}>{value === "Booked" ? "Scheduled" : value || "Scheduled"}</span>;
 }
 
-function PageHeader({ role, name, photo, onLogout, onEdit }) {
+export function PageHeader({ role, name, photo, onLogout, onEdit }) {
   return <header className="role-header">
     <div className="hospital-brand"><span className="brand-mark">✚</span><span><strong>City Care Hospital</strong><small>Care Today, Healthier Tomorrow</small></span></div>
     <div className="role-header-actions"><div className="header-user"><Avatar name={name} photo={photo} size="small" /><span><strong>{name}</strong><small>{role}</small></span></div>

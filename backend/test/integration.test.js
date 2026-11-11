@@ -462,6 +462,8 @@ test("MongoDB-backed API workflows: authentication, records, appointments, admis
   assert.equal(selfBooking.status, 201, JSON.stringify(selfBooking.data));
   const ownAppointments = await request("/appointments", { token: patientUser.token });
   assert.ok(ownAppointments.data.every(appointment => String(appointment.patient?._id || appointment.patient) === ownProfileId));
+  const otherPatientBills = await request(`/billing?patient=${patientId}`, { token: patientUser.token });
+  assert.equal(otherPatientBills.status, 403, "a Patient must not override billing scope with another patient ID");
 
   const deactivatedDoctor = await request(`/doctors/${doctorId}`, { token: admin.token, method: "DELETE" });
   assert.equal(deactivatedDoctor.status, 200);

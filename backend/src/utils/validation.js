@@ -4,6 +4,10 @@ export function isValidEmail(value) {
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 }
 
+export function isValidPassword(value) {
+  return typeof value === "string" && value.length >= 8 && value.length <= 128;
+}
+
 export function parseFutureDate(value, now = Date.now()) {
   if (typeof value !== "string" && !(value instanceof Date)) return null;
   if (typeof value === "string" && !value.trim()) return null;

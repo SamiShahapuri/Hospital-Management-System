@@ -6,11 +6,12 @@ import User from "../models/User.js";
 import Department from "../models/Department.js";
 import { authenticate, allowRoles } from "../middleware/auth.js";
 import { validateProfileUpdates } from "../utils/profileValidation.js";
+import { isValidPassword } from "../utils/validation.js";
 
 const router = Router();
 router.use(authenticate);
 
-function validAvailability(availability) {
+export function validAvailability(availability) {
   if (availability === undefined) return true;
   if (!Array.isArray(availability)) return false;
   return availability.every((slot) =>
@@ -111,7 +112,7 @@ router.post("/", allowRoles("Admin", "Receptionist"), async (req, res, next) => 
     if (!/^[a-z0-9._-]{3,32}$/.test(username)) {
       return res.status(400).json({ message: "Doctor username must be 3–32 letters, numbers, dots, underscores or hyphens" });
     }
-    if (password.length < 8 || password.length > 128) {
+    if (!isValidPassword(password)) {
       return res.status(400).json({ message: "Set an initial doctor password between 8 and 128 characters" });
     }
     if (await User.exists({ $or: [{ email }, { username }] })) return res.status(409).json({ message: "That email or username is already used by another account" });

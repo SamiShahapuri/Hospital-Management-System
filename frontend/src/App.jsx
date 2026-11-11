@@ -57,7 +57,7 @@ function LoginPage({ onLogin, allowedRoles, portalTitle, portalSubtitle, expecte
       <label>Patient ID<input value={activation.patientId} placeholder="PT-ABC123" onChange={e=>setActivation({...activation,patientId:e.target.value.toUpperCase()})} required /></label>
       <label>Full name as registered<input value={activation.name} onChange={e=>setActivation({...activation,name:e.target.value})} required /></label>
       <label>Registered email<input type="email" value={activation.email} onChange={e=>setActivation({...activation,email:e.target.value})} required /></label>
-      <label>Choose username<input required minLength="3" maxLength="32" pattern="[a-zA-Z0-9._-]{3,32}" value={activation.username} placeholder="patient01" onChange={e=>setActivation({...activation,username:e.target.value.toLowerCase()})} /></label>
+      <label>Choose username<input required minLength="3" maxLength="32" pattern={"[a-zA-Z0-9._\\-]{3,32}"} value={activation.username} placeholder="patient01" onChange={e=>setActivation({...activation,username:e.target.value.toLowerCase()})} /></label>
       <label>Create password<input type="password" minLength="8" maxLength="128" value={activation.password} onChange={e=>setActivation({...activation,password:e.target.value})} required /></label>
       <button disabled={busy}>{busy ? "Checking record…" : "Activate account"}</button>
     </form> : <form className="form-stack" onSubmit={submit}>

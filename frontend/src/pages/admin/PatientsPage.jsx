@@ -62,7 +62,7 @@ export default function PatientsPage() {
         <label>Full name<input maxLength="120" required value={form.fullName} onChange={e => setForm({ ...form, fullName: e.target.value })} /></label>
         <label>Age<input type="number" min="0" max="120" step="1" required value={form.age} onChange={e => setForm({ ...form, age: e.target.value })} /></label>
         <label>Gender<select required value={form.gender} onChange={e => setForm({ ...form, gender: e.target.value })}><option value="">Choose gender</option><option>Male</option><option>Female</option><option>Other</option><option>Prefer not to say</option></select></label>
-        <label>Phone<input type="tel" pattern="[+0-9 ()-]{7,30}" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} /></label>
+        <label>Phone<input type="tel" pattern={"[+0-9 \\(\\)\\-]{7,30}"} value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} /></label>
         <label>Registered email<input type="email" required value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} /></label>
         <label>Address<input maxLength="300" value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} /></label>
         <div className="form-actions"><button disabled={busy}>{busy ? "Saving…" : "Register patient"}</button></div>

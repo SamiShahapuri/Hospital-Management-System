@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { api } from "../../api";
 import AvailabilityEditor from "../../components/AvailabilityEditor.jsx";
-import { Avatar, ProfileEditor, AppointmentRow, dateLabel, timeLabel } from "../../components/role/RoleWidgets.jsx";
+import { Avatar, PageHeader, ProfileEditor, AppointmentRow, dateLabel, timeLabel } from "../../components/role/RoleWidgets.jsx";
 
 export default function DoctorDashboard({ user, onLogout }) {
   const [profile, setProfile] = useState(null);

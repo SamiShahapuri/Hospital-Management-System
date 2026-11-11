@@ -27,6 +27,9 @@ router.get("/", allowRoles("Admin", "Receptionist", "Patient"), async (req, res,
       if (!mongoose.isValidObjectId(req.query.patient)) {
         return res.status(400).json({ message: "Invalid patient ID" });
       }
+      if (req.user.role === "Patient" && String(filter.patient) !== String(req.query.patient)) {
+        return res.status(403).json({ message: "You can only view bills for your own patient profile" });
+      }
       filter.patient = req.query.patient;
     }
     const bills = await Bill.find(filter)
