@@ -45,6 +45,19 @@ async function screenshot(page, name) {
   return `Screenshots/${name}`;
 }
 
+async function waitForBedStatus(bedId, expectedStatus, timeoutMs = 5000) {
+  const deadline = Date.now() + timeoutMs;
+  do {
+    const response = await page.request.get(`${apiUrl}/facility/beds?fresh=${Date.now()}`, {
+      headers: { Authorization: `Bearer ${adminToken}`, "Cache-Control": "no-cache" }
+    });
+    const beds = await response.json();
+    if (beds.find(bed => bed._id === bedId)?.status === expectedStatus) return;
+    await page.waitForTimeout(100);
+  } while (Date.now() < deadline);
+  throw new Error(`Bed ${bedId} did not reach ${expectedStatus} within ${timeoutMs}ms`);
+}
+
 function nextWeekday(targetDay) {
   const current = new Date();
   const days = (targetDay - current.getDay() + 7) % 7 || 7;
@@ -170,9 +183,9 @@ await run("ST-ADMIN-FACILITY-01", "Admin creates a ward and room and manages gen
   await firstBed.waitFor();
   const bedNumber = (await firstBed.locator("strong").textContent()).trim();
   await firstBed.getByLabel(`Change status for ${bedNumber}`).selectOption("Cleaning");
-  await firstBed.getByText("Cleaning", { exact: true }).waitFor();
+  await firstBed.locator("span.status-pill").filter({ hasText: /^Cleaning$/ }).waitFor();
   await firstBed.getByLabel(`Change status for ${bedNumber}`).selectOption("Available");
-  await firstBed.getByText("Available", { exact: true }).waitFor();
+  await firstBed.locator("span.status-pill").filter({ hasText: /^Available$/ }).waitFor();
 
   const bedsResponse = await page.request.get(`${apiUrl}/facility/beds`, { headers: { Authorization: `Bearer ${adminToken}` } });
   const beds = await bedsResponse.json();
@@ -205,9 +218,7 @@ await run("ST-ADMIN-ADMISSION-01", "Admin admits, treats, and discharges a patie
   await page.getByRole("button", { name: "Confirm discharge" }).click();
   await row.filter({ hasText: "Discharged" }).waitFor();
 
-  const bedsResponse = await page.request.get(`${apiUrl}/facility/beds`, { headers: { Authorization: `Bearer ${adminToken}` } });
-  const beds = await bedsResponse.json();
-  if (beds.find(bed => bed._id === systemBedId)?.status !== "Available") throw new Error("Discharge did not release the allocated bed");
+  await waitForBedStatus(systemBedId, "Available");
   return { actual: "Admission, treatment entry, required discharge summary, automatic bed release, and discharge persistence were verified.", evidence: await screenshot(page, "13-admission-treatment-discharge.png") };
 });
 

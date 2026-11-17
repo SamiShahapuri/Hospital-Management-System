@@ -1,0 +1,253 @@
+
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Code coverage report for src/routes/public.js</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../prettify.css" />
+    <link rel="stylesheet" href="../../base.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="../../favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+    
+<body>
+<div class='wrapper'>
+    <div class='pad1'>
+        <h1><a href="../../index.html">All files</a> / <a href="index.html">src/routes</a> public.js</h1>
+        <div class='clearfix'>
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Statements</span>
+                <span class='fraction'>0/56</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Branches</span>
+                <span class='fraction'>0/1</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Functions</span>
+                <span class='fraction'>0/1</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Lines</span>
+                <span class='fraction'>0/56</span>
+            </div>
+        
+            
+        </div>
+        <p class="quiet">
+            Press <em>n</em> or <em>j</em> to go to the next uncovered block, <em>b</em>, <em>p</em> or <em>k</em> for the previous block.
+        </p>
+        <template id="filterTemplate">
+            <div class="quiet">
+                Filter:
+                <input type="search" id="fileSearch">
+            </div>
+        </template>
+    </div>
+    <div class='status-line low'></div>
+    <pre><table class="coverage">
+<tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
+<a name='L2'></a><a href='#L2'>2</a>
+<a name='L3'></a><a href='#L3'>3</a>
+<a name='L4'></a><a href='#L4'>4</a>
+<a name='L5'></a><a href='#L5'>5</a>
+<a name='L6'></a><a href='#L6'>6</a>
+<a name='L7'></a><a href='#L7'>7</a>
+<a name='L8'></a><a href='#L8'>8</a>
+<a name='L9'></a><a href='#L9'>9</a>
+<a name='L10'></a><a href='#L10'>10</a>
+<a name='L11'></a><a href='#L11'>11</a>
+<a name='L12'></a><a href='#L12'>12</a>
+<a name='L13'></a><a href='#L13'>13</a>
+<a name='L14'></a><a href='#L14'>14</a>
+<a name='L15'></a><a href='#L15'>15</a>
+<a name='L16'></a><a href='#L16'>16</a>
+<a name='L17'></a><a href='#L17'>17</a>
+<a name='L18'></a><a href='#L18'>18</a>
+<a name='L19'></a><a href='#L19'>19</a>
+<a name='L20'></a><a href='#L20'>20</a>
+<a name='L21'></a><a href='#L21'>21</a>
+<a name='L22'></a><a href='#L22'>22</a>
+<a name='L23'></a><a href='#L23'>23</a>
+<a name='L24'></a><a href='#L24'>24</a>
+<a name='L25'></a><a href='#L25'>25</a>
+<a name='L26'></a><a href='#L26'>26</a>
+<a name='L27'></a><a href='#L27'>27</a>
+<a name='L28'></a><a href='#L28'>28</a>
+<a name='L29'></a><a href='#L29'>29</a>
+<a name='L30'></a><a href='#L30'>30</a>
+<a name='L31'></a><a href='#L31'>31</a>
+<a name='L32'></a><a href='#L32'>32</a>
+<a name='L33'></a><a href='#L33'>33</a>
+<a name='L34'></a><a href='#L34'>34</a>
+<a name='L35'></a><a href='#L35'>35</a>
+<a name='L36'></a><a href='#L36'>36</a>
+<a name='L37'></a><a href='#L37'>37</a>
+<a name='L38'></a><a href='#L38'>38</a>
+<a name='L39'></a><a href='#L39'>39</a>
+<a name='L40'></a><a href='#L40'>40</a>
+<a name='L41'></a><a href='#L41'>41</a>
+<a name='L42'></a><a href='#L42'>42</a>
+<a name='L43'></a><a href='#L43'>43</a>
+<a name='L44'></a><a href='#L44'>44</a>
+<a name='L45'></a><a href='#L45'>45</a>
+<a name='L46'></a><a href='#L46'>46</a>
+<a name='L47'></a><a href='#L47'>47</a>
+<a name='L48'></a><a href='#L48'>48</a>
+<a name='L49'></a><a href='#L49'>49</a>
+<a name='L50'></a><a href='#L50'>50</a>
+<a name='L51'></a><a href='#L51'>51</a>
+<a name='L52'></a><a href='#L52'>52</a>
+<a name='L53'></a><a href='#L53'>53</a>
+<a name='L54'></a><a href='#L54'>54</a>
+<a name='L55'></a><a href='#L55'>55</a>
+<a name='L56'></a><a href='#L56'>56</a>
+<a name='L57'></a><a href='#L57'>57</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" ><span class="branch-0 cbranch-no" title="branch not covered" >import { Router } from "express";</span></span></span>
+<span class="cstat-no" title="statement not covered" >import mongoose from "mongoose";</span>
+<span class="cstat-no" title="statement not covered" >import { randomBytes } from "node:crypto";</span>
+<span class="cstat-no" title="statement not covered" >import Doctor from "../models/Doctor.js";</span>
+<span class="cstat-no" title="statement not covered" >import Department from "../models/Department.js";</span>
+<span class="cstat-no" title="statement not covered" >import Patient from "../models/Patient.js";</span>
+<span class="cstat-no" title="statement not covered" >import Appointment from "../models/Appointment.js";</span>
+<span class="cstat-no" title="statement not covered" >import { isValidEmail, parseFutureDate } from "../utils/validation.js";</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >const router = Router();</span>
+<span class="cstat-no" title="statement not covered" >const hospitalTimeZone = process.env.HOSPITAL_TIME_ZONE || "Asia/Kolkata";</span>
+<span class="cstat-no" title="statement not covered" >const weekdays = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };</span>
+<span class="cstat-no" title="statement not covered" >function scheduleParts(date) {</span>
+<span class="cstat-no" title="statement not covered" >  const parts = new Intl.DateTimeFormat("en-GB", { timeZone: hospitalTimeZone, weekday: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(date);</span>
+<span class="cstat-no" title="statement not covered" >  const values = Object.fromEntries(parts.map(({ type, value }) =&gt; [type, value]));</span>
+<span class="cstat-no" title="statement not covered" >  return { dayOfWeek: weekdays[values.weekday], time: `${values.hour}:${values.minute}`, hour: Number(values.hour), minute: Number(values.minute) };</span>
+<span class="cstat-no" title="statement not covered" >}</span>
+<span class="cstat-no" title="statement not covered" >function createSlotKeys(start, duration) {</span>
+<span class="cstat-no" title="statement not covered" >  return Array.from({ length: duration }, (_, i) =&gt; { const d = new Date(start.getTime() + i * 60000); return [d.getUTCFullYear(),String(d.getUTCMonth()+1).padStart(2,"0"),String(d.getUTCDate()).padStart(2,"0"),String(d.getUTCHours()).padStart(2,"0"),String(d.getUTCMinutes()).padStart(2,"0")].join(""); });</span>
+<span class="cstat-no" title="statement not covered" >}</span>
+<span class="cstat-no" title="statement not covered" >function zonedDateTimeToUtc(dateText, timeText) {</span>
+<span class="cstat-no" title="statement not covered" >  const [y,m,d] = dateText.split("-").map(Number); const [hh,mm] = timeText.split(":").map(Number);</span>
+<span class="cstat-no" title="statement not covered" >  const desired = Date.UTC(y,m-1,d,hh,mm); let guess = desired;</span>
+<span class="cstat-no" title="statement not covered" >  for (let i=0;i&lt;3;i++) {</span>
+<span class="cstat-no" title="statement not covered" >    const p = Object.fromEntries(new Intl.DateTimeFormat("en-CA", { timeZone: hospitalTimeZone, year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hourCycle:"h23" }).formatToParts(new Date(guess)).map(x=&gt;[x.type,x.value]));</span>
+<span class="cstat-no" title="statement not covered" >    const represented = Date.UTC(Number(p.year),Number(p.month)-1,Number(p.day),Number(p.hour),Number(p.minute));</span>
+<span class="cstat-no" title="statement not covered" >    guess += desired - represented;</span>
+<span class="cstat-no" title="statement not covered" >  }</span>
+<span class="cstat-no" title="statement not covered" >  return new Date(guess);</span>
+<span class="cstat-no" title="statement not covered" >}</span>
+<span class="cstat-no" title="statement not covered" >function validPhone(phone) { const digits = phone.replace(/\D/g, "").length; return digits &gt;= 7 &amp;&amp; digits &lt;= 15 &amp;&amp; /^\+?[0-9 ()-]+$/.test(phone); }</span>
+<span class="cstat-no" title="statement not covered" >async function overlaps(doctorId, start, duration) {</span>
+<span class="cstat-no" title="statement not covered" >  const end = new Date(start.getTime()+duration*60000);</span>
+<span class="cstat-no" title="statement not covered" >  const rows = await Appointment.find({ doctor:doctorId,status:{$in:["Booked","Confirmed"]},scheduledAt:{$lt:end,$gte:new Date(start.getTime()-180*60000)} }).select("scheduledAt durationMinutes");</span>
+<span class="cstat-no" title="statement not covered" >  return rows.some(a=&gt;start.getTime()&lt;new Date(a.scheduledAt).getTime()+(a.durationMinutes||30)*60000 &amp;&amp; new Date(a.scheduledAt).getTime()&lt;end.getTime());</span>
+<span class="cstat-no" title="statement not covered" >}</span>
+<span class="cstat-no" title="statement not covered" >function withinDoctorHours(doctor,date,duration) {</span>
+<span class="cstat-no" title="statement not covered" >  const {dayOfWeek,hour,minute}=scheduleParts(date);const start=hour*60+minute;const end=start+duration;</span>
+<span class="cstat-no" title="statement not covered" >  return (doctor.availability||[]).some(slot=&gt;{const open=Number(slot.startTime.slice(0,2))*60+Number(slot.startTime.slice(3));const close=Number(slot.endTime.slice(0,2))*60+Number(slot.endTime.slice(3));return slot.dayOfWeek===dayOfWeek&amp;&amp;start&gt;=open&amp;&amp;end&lt;=close;});</span>
+<span class="cstat-no" title="statement not covered" >}</span>
+<span class="cstat-no" title="statement not covered" >router.get("/booking-options", async (_req, res, next) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >  try { const [departments,doctors]=await Promise.all([Department.find({active:true}).select("name description").sort({name:1}),Doctor.find({active:true}).select("fullName specialization department availability consultationDuration").sort({fullName:1})]);res.json({departments,doctors}); } catch(error){next(error);}</span>
+<span class="cstat-no" title="statement not covered" >});</span>
+<span class="cstat-no" title="statement not covered" >router.get("/availability", async (req,res,next)=&gt;{</span>
+<span class="cstat-no" title="statement not covered" >  try { const {doctor:doctorId,date}=req.query;if(!mongoose.isValidObjectId(doctorId)||!/^\d{4}-\d{2}-\d{2}$/.test(String(date||"")))return res.status(400).json({message:"A valid doctor and date are required"});const doctor=await Doctor.findOne({_id:doctorId,active:true});if(!doctor)return res.status(404).json({message:"Active doctor not found"});const [y,m,d]=String(date).split("-").map(Number);const weekday=new Date(Date.UTC(y,m-1,d)).getUTCDay();const schedule=(doctor.availability||[]).filter(s=&gt;s.dayOfWeek===weekday);const duration=doctor.consultationDuration||30;const slots=[];for(const s of schedule){const [sh,sm]=s.startTime.split(":").map(Number);const [eh,em]=s.endTime.split(":").map(Number);const open=sh*60+sm,close=eh*60+em;for(let mins=open;mins+duration&lt;=close;mins+=duration){const label=`${String(Math.floor(mins/60)).padStart(2,"0")}:${String(mins%60).padStart(2,"0")}`;const at=zonedDateTimeToUtc(String(date),label);if(at&gt;new Date()&amp;&amp;!await overlaps(doctor._id,at,duration))slots.push({label,scheduledAt:at.toISOString()});}}res.json({durationMinutes:duration,slots});}catch(e){next(e);}</span>
+<span class="cstat-no" title="statement not covered" >});</span>
+<span class="cstat-no" title="statement not covered" >router.post("/book-appointment", async (req,res,next)=&gt;{</span>
+<span class="cstat-no" title="statement not covered" >  try {</span>
+<span class="cstat-no" title="statement not covered" >    const fullName=typeof req.body.fullName==="string"?req.body.fullName.trim():"";const email=typeof req.body.email==="string"?req.body.email.trim().toLowerCase():"";const phone=typeof req.body.phone==="string"?req.body.phone.trim():"";const reason=typeof req.body.reason==="string"?req.body.reason.trim():"";const doctorId=String(req.body.doctor||"");const scheduledAt=parseFutureDate(req.body.scheduledAt);</span>
+<span class="cstat-no" title="statement not covered" >    if(!fullName||fullName.length&gt;120)return res.status(400).json({message:"Enter your full name (maximum 120 characters)."});if(!isValidEmail(email))return res.status(400).json({message:"Enter a valid email address."});if(!validPhone(phone))return res.status(400).json({message:"Enter a valid contact number (7–15 digits)."});if(!mongoose.isValidObjectId(doctorId))return res.status(400).json({message:"Choose a valid doctor."});if(!scheduledAt)return res.status(400).json({message:"Choose a valid future date and time."});if(reason.length&gt;500)return res.status(400).json({message:"Reason must be 500 characters or fewer."});</span>
+<span class="cstat-no" title="statement not covered" >    const doctor=await Doctor.findOne({_id:doctorId,active:true});if(!doctor)return res.status(404).json({message:"That doctor is not available for booking."});const duration=doctor.consultationDuration||30;if(!withinDoctorHours(doctor,scheduledAt,duration))return res.status(400).json({message:"The selected doctor is not available for the full consultation duration."});if(await overlaps(doctor._id,scheduledAt,duration))return res.status(409).json({message:"That time slot overlaps an existing appointment. Please choose another time."});</span>
+<span class="cstat-no" title="statement not covered" >    let patient=await Patient.findOne({fullName,email,phone,linkedUser:null});if(!patient)patient=await Patient.create({patientId:`PT-${randomBytes(3).toString("hex").toUpperCase()}`,fullName,email,phone});</span>
+<span class="cstat-no" title="statement not covered" >    const appointment=await Appointment.create({patient:patient._id,doctor:doctor._id,scheduledAt,durationMinutes:duration,slotKeys:createSlotKeys(scheduledAt,duration),reason});const result=await appointment.populate([{path:"patient",select:"fullName phone email"},{path:"doctor",select:"fullName specialization department"}]);res.status(201).json({message:"Your appointment request is confirmed.",appointment:result});</span>
+<span class="cstat-no" title="statement not covered" >  }catch(error){if(error?.code===11000)return res.status(409).json({message:"That time slot has just been booked. Please choose another time."});next(error);}</span>
+<span class="cstat-no" title="statement not covered" >});</span>
+<span class="cstat-no" title="statement not covered" >export default router;</span>
+&nbsp;</pre></td></tr></table></pre>
+
+                <div class='push'></div><!-- for sticky footer -->
+            </div><!-- /wrapper -->
+            <div class='footer quiet pad2 space-top1 center small'>
+                Code coverage generated by
+                <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
+                at 2026-11-17T07:05:38.591Z
+            </div>
+        <script src="../../prettify.js"></script>
+        <script>
+            window.onload = function () {
+                prettyPrint();
+            };
+        </script>
+        <script src="../../sorter.js"></script>
+        <script src="../../block-navigation.js"></script>
+    </body>
+</html>
+    

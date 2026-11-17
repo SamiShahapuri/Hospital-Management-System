@@ -1,14 +1,15 @@
 {
-  "executedAt": "2026-11-17T04:43:56.376Z",
+  "executedAt": "2026-11-17T06:26:09.548Z",
   "baseUrl": "http://localhost:5174",
   "apiUrl": "http://localhost:5200/api",
   "total": 15,
-  "passed": 13,
-  "failed": 2,
+  "passed": 15,
+  "failed": 0,
   "browserErrors": [
     "console: Failed to load resource: net::ERR_NETWORK_ACCESS_DENIED",
     "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
     "console: Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "console: Failed to load resource: net::ERR_NETWORK_ACCESS_DENIED",
     "console: Failed to load resource: net::ERR_NETWORK_ACCESS_DENIED",
     "console: Failed to load resource: net::ERR_NETWORK_ACCESS_DENIED",
     "console: Failed to load resource: net::ERR_NETWORK_ACCESS_DENIED",
@@ -66,16 +67,16 @@
     {
       "id": "ST-ADMIN-FACILITY-01",
       "description": "Admin creates a ward and room and manages generated bed states",
-      "status": "FAIL",
-      "actual": "locator.waitFor: Error: strict mode violation: locator('article.bed-tile').filter({ hasText: 'SYS-622560' }).first().getByText('Cleaning', { exact: true }) resolved to 2 elements:\n    1) <span class=\"status-pill cleaning\">Cleaning</span> aka getByText('Cleaning').nth(1)\n    2) <option>Cleaning</option> aka getByLabel('Change status for SYS-622560-1')\n\nCall log:\n\u001b[2m  - waiting for locator('article.bed-tile').filter({ hasText: 'SYS-622560' }).first().getByText('Cleaning', { exact: true }) to be visible\u001b[22m\n\u001b[2m    2 × locator resolved to hidden <option>Cleaning</option>\u001b[22m\n\n    at C:\\Users\\SAMI SHAHAPURI\\Desktop\\SEM_5\\Software Engineering\\SE_MINI_PROJECT\\Hospital-Management-System\\Documents\\TestingReport\\scripts\\system-tests.mjs:173:57\n    at async run (C:\\Users\\SAMI SHAHAPURI\\Desktop\\SEM_5\\Software Engineering\\SE_MINI_PROJECT\\Hospital-Management-System\\Documents\\TestingReport\\scripts\\system-tests.mjs:32:19)\n    at async file:///C:/Users/SAMI%20SHAHAPURI/Desktop/SEM_5/Software%20Engineering/SE_MINI_PROJECT/Hospital-Management-System/Documents/TestingReport/scripts/system-tests.mjs:147:1",
-      "evidence": ""
+      "status": "PASS",
+      "actual": "Ward and room persisted, two bed records were generated, and a bed completed Cleaning to Available state changes.",
+      "evidence": "Screenshots/12-facility-ward-room-bed.png"
     },
     {
       "id": "ST-ADMIN-ADMISSION-01",
       "description": "Admin admits, treats, and discharges a patient with bed release",
-      "status": "FAIL",
-      "actual": "Error: Patient and facility prerequisites did not complete\n    at file:///C:/Users/SAMI%20SHAHAPURI/Desktop/SEM_5/Software%20Engineering/SE_MINI_PROJECT/Hospital-Management-System/Documents/TestingReport/scripts/system-tests.mjs:186:49\n    at run (file:///C:/Users/SAMI%20SHAHAPURI/Desktop/SEM_5/Software%20Engineering/SE_MINI_PROJECT/Hospital-Management-System/Documents/TestingReport/scripts/system-tests.mjs:32:25)\n    at file:///C:/Users/SAMI%20SHAHAPURI/Desktop/SEM_5/Software%20Engineering/SE_MINI_PROJECT/Hospital-Management-System/Documents/TestingReport/scripts/system-tests.mjs:185:7",
-      "evidence": ""
+      "status": "PASS",
+      "actual": "Admission, treatment entry, required discharge summary, automatic bed release, and discharge persistence were verified.",
+      "evidence": "Screenshots/13-admission-treatment-discharge.png"
     },
     {
       "id": "ST-ADMIN-BILLING-01",

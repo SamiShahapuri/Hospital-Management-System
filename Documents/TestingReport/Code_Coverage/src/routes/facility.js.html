@@ -1,0 +1,160 @@
+
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Code coverage report for src/routes/facility.js</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../prettify.css" />
+    <link rel="stylesheet" href="../../base.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="../../favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+    
+<body>
+<div class='wrapper'>
+    <div class='pad1'>
+        <h1><a href="../../index.html">All files</a> / <a href="index.html">src/routes</a> facility.js</h1>
+        <div class='clearfix'>
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Statements</span>
+                <span class='fraction'>0/25</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Branches</span>
+                <span class='fraction'>0/1</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Functions</span>
+                <span class='fraction'>0/1</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Lines</span>
+                <span class='fraction'>0/25</span>
+            </div>
+        
+            
+        </div>
+        <p class="quiet">
+            Press <em>n</em> or <em>j</em> to go to the next uncovered block, <em>b</em>, <em>p</em> or <em>k</em> for the previous block.
+        </p>
+        <template id="filterTemplate">
+            <div class="quiet">
+                Filter:
+                <input type="search" id="fileSearch">
+            </div>
+        </template>
+    </div>
+    <div class='status-line low'></div>
+    <pre><table class="coverage">
+<tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
+<a name='L2'></a><a href='#L2'>2</a>
+<a name='L3'></a><a href='#L3'>3</a>
+<a name='L4'></a><a href='#L4'>4</a>
+<a name='L5'></a><a href='#L5'>5</a>
+<a name='L6'></a><a href='#L6'>6</a>
+<a name='L7'></a><a href='#L7'>7</a>
+<a name='L8'></a><a href='#L8'>8</a>
+<a name='L9'></a><a href='#L9'>9</a>
+<a name='L10'></a><a href='#L10'>10</a>
+<a name='L11'></a><a href='#L11'>11</a>
+<a name='L12'></a><a href='#L12'>12</a>
+<a name='L13'></a><a href='#L13'>13</a>
+<a name='L14'></a><a href='#L14'>14</a>
+<a name='L15'></a><a href='#L15'>15</a>
+<a name='L16'></a><a href='#L16'>16</a>
+<a name='L17'></a><a href='#L17'>17</a>
+<a name='L18'></a><a href='#L18'>18</a>
+<a name='L19'></a><a href='#L19'>19</a>
+<a name='L20'></a><a href='#L20'>20</a>
+<a name='L21'></a><a href='#L21'>21</a>
+<a name='L22'></a><a href='#L22'>22</a>
+<a name='L23'></a><a href='#L23'>23</a>
+<a name='L24'></a><a href='#L24'>24</a>
+<a name='L25'></a><a href='#L25'>25</a>
+<a name='L26'></a><a href='#L26'>26</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" ><span class="branch-0 cbranch-no" title="branch not covered" >import { Router } from "express";</span></span></span>
+<span class="cstat-no" title="statement not covered" >import mongoose from "mongoose";</span>
+<span class="cstat-no" title="statement not covered" >import Ward from "../models/Ward.js";</span>
+<span class="cstat-no" title="statement not covered" >import Room from "../models/Room.js";</span>
+<span class="cstat-no" title="statement not covered" >import Bed from "../models/Bed.js";</span>
+<span class="cstat-no" title="statement not covered" >import Department from "../models/Department.js";</span>
+<span class="cstat-no" title="statement not covered" >import Admission from "../models/Admission.js";</span>
+<span class="cstat-no" title="statement not covered" >import { authenticate, allowRoles } from "../middleware/auth.js";</span>
+<span class="cstat-no" title="statement not covered" >const router = Router();</span>
+<span class="cstat-no" title="statement not covered" >router.use(authenticate, allowRoles("Admin", "Receptionist"));</span>
+<span class="cstat-no" title="statement not covered" >const idOK = mongoose.isValidObjectId;</span>
+<span class="cstat-no" title="statement not covered" >const bedStatuses = ["Available", "Reserved", "Occupied", "Cleaning", "Under Maintenance"];</span>
+<span class="cstat-no" title="statement not covered" >router.get("/wards", async (_req,res,next)=&gt;{try{res.json(await Ward.find({active:true}).populate("department","name").sort({name:1}));}catch(e){next(e);}});</span>
+<span class="cstat-no" title="statement not covered" >router.get("/rooms", async (_req,res,next)=&gt;{try{res.json(await Room.find({active:true}).populate({path:"ward",populate:{path:"department",select:"name"}}).sort({roomNumber:1}));}catch(e){next(e);}});</span>
+<span class="cstat-no" title="statement not covered" >router.get("/beds", async (_req,res,next)=&gt;{try{const rows=await Bed.find().populate({path:"room",populate:{path:"ward",populate:{path:"department",select:"name"}}}).sort({bedNumber:1});res.json(rows.filter(b=&gt;b.room?.active!==false&amp;&amp;b.room?.ward?.active!==false));}catch(e){next(e);}});</span>
+<span class="cstat-no" title="statement not covered" >router.post("/wards", async (req,res,next)=&gt;{try{const {name,department,wardType="General",capacity}=req.body;if(typeof name!=="string"||!name.trim()||!idOK(department)||!Number.isInteger(Number(capacity))||Number(capacity)&lt;1||Number(capacity)&gt;500)return res.status(400).json({message:"Ward name, valid department and capacity (1–500) are required"});if(!(await Department.exists({_id:department,active:true})))return res.status(404).json({message:"Active department not found"});const ward=await Ward.create({name:name.trim(),department,wardType,capacity:Number(capacity)});res.status(201).json(await ward.populate("department","name"));}catch(e){if(e.code===11000)return res.status(409).json({message:"This ward already exists in the department"});next(e);}});</span>
+<span class="cstat-no" title="statement not covered" >router.patch("/wards/:id", async (req,res,next)=&gt;{try{if(!idOK(req.params.id))return res.status(400).json({message:"Invalid ward ID"});const updates={};for(const k of ["name","wardType"])if(k in req.body)updates[k]=req.body[k];if("capacity" in req.body){const n=Number(req.body.capacity);if(!Number.isInteger(n)||n&lt;1||n&gt;500)return res.status(400).json({message:"Capacity must be from 1 to 500"});updates.capacity=n;}const current=await Ward.findById(req.params.id);if(!current)return res.status(404).json({message:"Ward not found"});if(updates.capacity){const rooms=await Room.find({ward:current._id,active:true}).select("_id");const bedCount=await Bed.countDocuments({room:{$in:rooms.map(r=&gt;r._id)}});if(updates.capacity&lt;bedCount)return res.status(409).json({message:`Capacity cannot be below its ${bedCount} configured beds`});}Object.assign(current,updates);await current.save();const ward=await current.populate("department","name");res.json(ward);}catch(e){next(e);}});</span>
+<span class="cstat-no" title="statement not covered" >router.delete("/wards/:id", async (req,res,next)=&gt;{try{if(!idOK(req.params.id))return res.status(400).json({message:"Invalid ward ID"});const rooms=await Room.find({ward:req.params.id,active:true});if(rooms.length)return res.status(409).json({message:"Remove or deactivate this ward's rooms first"});const ward=await Ward.findByIdAndUpdate(req.params.id,{active:false},{new:true});if(!ward)return res.status(404).json({message:"Ward not found"});res.json({message:"Ward deactivated"});}catch(e){next(e);}});</span>
+<span class="cstat-no" title="statement not covered" >router.post("/rooms", async (req,res,next)=&gt;{try{const {ward,roomNumber,roomType="Standard",bedCount}=req.body;const count=Number(bedCount);const dailyRate=Number(req.body.dailyRate ?? 1200);if(!idOK(ward)||typeof roomNumber!=="string"||!roomNumber.trim()||!Number.isInteger(count)||count&lt;1||count&gt;20||!Number.isFinite(dailyRate)||dailyRate&lt;0||dailyRate&gt;100000)return res.status(400).json({message:"Choose a ward, room number, bed count (1–20) and valid daily room rate"});const w=await Ward.findOne({_id:ward,active:true});if(!w)return res.status(404).json({message:"Active ward not found"});const currentBeds=await Bed.countDocuments({room:{$in:(await Room.find({ward,active:true}).select("_id")).map(r=&gt;r._id)}});if(currentBeds+count&gt;w.capacity)return res.status(409).json({message:`Ward capacity is ${w.capacity}; ${currentBeds} beds are already configured`});const room=await Room.create({ward,roomNumber:roomNumber.trim(),roomType,bedCount:count,dailyRate});await Bed.insertMany(Array.from({length:count},(_,i)=&gt;({room:room._id,bedNumber:`${roomNumber.trim()}-${i+1}`})));res.status(201).json(await room.populate({path:"ward",populate:{path:"department",select:"name"}}));}catch(e){if(e.code===11000)return res.status(409).json({message:"Room or bed numbers already exist"});next(e);}});</span>
+<span class="cstat-no" title="statement not covered" >router.patch("/rooms/:id", async (req,res,next)=&gt;{try{if(!idOK(req.params.id))return res.status(400).json({message:"Invalid room ID"});const room=await Room.findById(req.params.id);if(!room)return res.status(404).json({message:"Room not found"});if("roomType" in req.body)room.roomType=req.body.roomType;if("dailyRate" in req.body){const rate=Number(req.body.dailyRate);if(!Number.isFinite(rate)||rate&lt;0||rate&gt;100000)return res.status(400).json({message:"Daily rate must be between 0 and 100000"});room.dailyRate=rate;}if("roomNumber" in req.body){if(typeof req.body.roomNumber!=="string"||!req.body.roomNumber.trim())return res.status(400).json({message:"Room number is required"});room.roomNumber=req.body.roomNumber.trim();}await room.save();res.json(room);}catch(e){if(e.code===11000)return res.status(409).json({message:"Room number already exists in this ward"});next(e);}});</span>
+<span class="cstat-no" title="statement not covered" >router.delete("/rooms/:id", async(req,res,next)=&gt;{try{if(!idOK(req.params.id))return res.status(400).json({message:"Invalid room ID"});const beds=await Bed.find({room:req.params.id});if(beds.some(b=&gt;b.status!=="Available"))return res.status(409).json({message:"Room has beds that are not available"});await Bed.updateMany({room:req.params.id},{$set:{status:"Under Maintenance"}});const room=await Room.findByIdAndUpdate(req.params.id,{active:false},{new:true});if(!room)return res.status(404).json({message:"Room not found"});res.json({message:"Room and its available bed records removed"});}catch(e){next(e);}});</span>
+<span class="cstat-no" title="statement not covered" >router.post("/beds", async(req,res,next)=&gt;{try{const {room,bedNumber,notes=""}=req.body;if(!idOK(room)||typeof bedNumber!=="string"||!bedNumber.trim())return res.status(400).json({message:"Room and bed number are required"});if(!(await Room.exists({_id:room,active:true})))return res.status(404).json({message:"Active room not found"});const bed=await Bed.create({room,bedNumber:bedNumber.trim(),notes});res.status(201).json(await bed.populate("room"));}catch(e){if(e.code===11000)return res.status(409).json({message:"That bed number already exists in this room"});next(e);}});</span>
+<span class="cstat-no" title="statement not covered" >router.patch("/beds/:id/status", async(req,res,next)=&gt;{try{if(!idOK(req.params.id))return res.status(400).json({message:"Invalid bed ID"});if(!bedStatuses.includes(req.body.status))return res.status(400).json({message:"Invalid bed status"});const bed=await Bed.findById(req.params.id);if(!bed)return res.status(404).json({message:"Bed not found"});if(bed.status==="Occupied"||await Admission.exists({bed:bed._id,status:"Admitted"}))return res.status(409).json({message:"An occupied bed can only be released by discharging or transferring the patient"});if(req.body.status==="Occupied")return res.status(400).json({message:"Use the admission workflow to occupy a bed"});bed.status=req.body.status;bed.notes=typeof req.body.notes==="string"?req.body.notes.slice(0,300):bed.notes;await bed.save();res.json(bed);}catch(e){next(e);}});</span>
+<span class="cstat-no" title="statement not covered" >router.get("/availability",async(_req,res,next)=&gt;{try{const [all,byStatus]=await Promise.all([Bed.countDocuments(),Bed.aggregate([{$group:{_id:"$status",count:{$sum:1}}}])]);res.json({total:all,byStatus:Object.fromEntries(byStatus.map(x=&gt;[x._id,x.count]))});}catch(e){next(e);}});</span>
+<span class="cstat-no" title="statement not covered" >export default router;</span>
+&nbsp;</pre></td></tr></table></pre>
+
+                <div class='push'></div><!-- for sticky footer -->
+            </div><!-- /wrapper -->
+            <div class='footer quiet pad2 space-top1 center small'>
+                Code coverage generated by
+                <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
+                at 2026-11-17T07:05:38.591Z
+            </div>
+        <script src="../../prettify.js"></script>
+        <script>
+            window.onload = function () {
+                prettyPrint();
+            };
+        </script>
+        <script src="../../sorter.js"></script>
+        <script src="../../block-navigation.js"></script>
+    </body>
+</html>
+    

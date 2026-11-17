@@ -195,14 +195,31 @@ test("MongoDB-backed API workflows: authentication, records, appointments, admis
   });
   assert.equal(invalidDoctor.status, 400);
   const availability = Array.from({ length: 7 }, (_, dayOfWeek) => ({ dayOfWeek, startTime: "09:00", endTime: "17:00" }));
-  const doctor = await request("/doctors", {
-    token: receptionist.token, method: "POST",
-    body: { fullName: `Dr Integration ${suffix}`, specialization: "General Medicine", department: departmentName, email: `doctor-${suffix}@example.com`, password: "DoctorIntegration123!", availability }
+  let doctorId;
+  await t.test("SEC-AUTH-05 authorized staff creates a linked Doctor account and profile", async () => {
+    const unauthorizedDoctor = await request("/doctors", {
+      token: doctorUser.token, method: "POST",
+      body: { fullName: `Unauthorized Doctor ${suffix}`, specialization: "General Medicine", department: departmentName, email: `unauthorized-doctor-${suffix}@example.com`, password: "DoctorIntegration123!", availability }
+    });
+    assert.equal(unauthorizedDoctor.status, 403, "Doctor role must not create another Doctor account");
+
+    const doctor = await request("/doctors", {
+      token: receptionist.token, method: "POST",
+      body: { fullName: `Dr Integration ${suffix}`, specialization: "General Medicine", department: departmentName, email: `doctor-${suffix}@example.com`, password: "DoctorIntegration123!", availability }
+    });
+    assert.equal(doctor.status, 201, JSON.stringify(doctor.data));
+    doctorId = doctor.data.doctor._id;
+    assert.ok(doctor.data.doctor.linkedUser, "created Doctor profile must contain linkedUser");
+
+    const createdDoctorAccount = await login(`doctor-${suffix}@example.com`, "DoctorIntegration123!");
+    assert.equal(createdDoctorAccount.user.role, "Doctor");
+    assert.equal(String(doctor.data.doctor.linkedUser), createdDoctorAccount.user.id, "Doctor profile must link to the created Doctor account");
+
+    const linkedProfile = await request("/doctors/me/profile", { token: createdDoctorAccount.token });
+    assert.equal(linkedProfile.status, 200);
+    assert.equal(linkedProfile.data._id, doctorId);
+    assert.equal(String(linkedProfile.data.linkedUser), createdDoctorAccount.user.id);
   });
-  assert.equal(doctor.status, 201, JSON.stringify(doctor.data));
-  const doctorId = doctor.data.doctor._id;
-  const createdDoctorAccount = await login(`doctor-${suffix}@example.com`, "DoctorIntegration123!");
-  assert.equal(createdDoctorAccount.user.role, "Doctor");
 
   const renamedDepartmentName = `${departmentName} Renamed`;
   const renamedDepartment = await request(`/departments/${department.data._id}`, {

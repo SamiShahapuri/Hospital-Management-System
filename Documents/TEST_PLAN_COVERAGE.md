@@ -1,12 +1,12 @@
 # Test Plan Implementation Coverage
 
-This document maps the supplied `testPlanDocument.pdf` (8 pages, 8 modules, 72 test cases) to the current code. It is an implementation review, **not a record that all 72 cases have passed execution**. The PDF's `Actual Result` and `Test Result` columns are still to be completed by running the cases on a local MongoDB-backed browser instance.
+This document maps the supplied `testPlanDocument.pdf` (8 pages, 8 modules, 72 test cases) to the current code and executed evidence. The PDF's `Actual Result` and `Test Result` columns now record **53 PASS** and **19 NOT EXECUTED** outcomes. A case is marked PASS only when the expected behavior is supported by an executed unit, integration, or browser-system test.
 
 ## Coverage summary
 
 | Module | Cases in submitted plan | Implementation status | Main implementation locations |
 |---|---:|---|---|
-| M1 Authentication & Role Management | 10 | Implemented; live login/lockout/logout verification still required | `backend/src/routes/auth.js`, `backend/src/middleware/auth.js`, `backend/src/models/User.js`, `frontend/src/App.jsx` |
+| M1 Authentication & Role Management | 10 | Implemented; login, lockout, logout and role routing verified | `backend/src/routes/auth.js`, `backend/src/middleware/auth.js`, `backend/src/models/User.js`, `frontend/src/App.jsx` |
 | M2 Patient & Medical Record Management | 10 | Implemented; concurrent multi-user update scenario requires live stress verification | `backend/src/routes/patients.js`, `backend/src/models/Patient.js`, `frontend/src/pages/admin/PatientsPage.jsx`, `frontend/src/pages/doctor/DoctorPatientsPage.jsx` |
 | M3 Doctor & Department Management | 9 | Implemented | `backend/src/routes/doctors.js`, `backend/src/routes/departments.js`, `backend/seed.js`, `frontend/src/pages/admin/DoctorsPage.jsx`, `frontend/src/pages/admin/DepartmentsPage.jsx` |
 | M4 Appointment Management | 9 | Implemented; simultaneous booking must be run against MongoDB to verify the unique-index race path | `backend/src/routes/appointments.js`, `backend/src/models/Appointment.js`, `frontend/src/pages/admin/AppointmentsPage.jsx`, `frontend/src/pages/public/GuestBookingPage.jsx` |
@@ -141,15 +141,22 @@ The seeded demo contains six illustrated departments only: Cardiology (heart), N
 
 The supplied sample login aliases are `admin01` / `Admin@123`, `drsmith` / `Doctor@123`, `reception01` / `Recep@123`, and `patient01` / `Pat@1234`. Patient activation is rejected unless the supplied identity matches an existing hospital record.
 
-The final recorded assessment on 11 November 2026 produced:
+The updated 72-case test-plan matrix records:
 
-| Testing type | Total | Passed | Failed | Blocked | Not executed |
-|---|---:|---:|---:|---:|---:|
-| Unit | 44 | 44 | 0 | 0 | 0 |
-| Integration | 8 | 8 | 0 | 0 | 0 |
-| System | 32 | 12 | 0 | 0 | 20 |
-| Overall | 84 | 64 | 0 | 0 | 20 |
+| Module | Total | Passed | Failed | Not executed |
+|---|---:|---:|---:|---:|
+| M1 Authentication & Role Management | 10 | 10 | 0 | 0 |
+| M2 Patient & Medical Record Management | 10 | 7 | 0 | 3 |
+| M3 Doctor & Department Management | 9 | 7 | 0 | 2 |
+| M4 Appointment Management | 9 | 7 | 0 | 2 |
+| M5 Admission & Discharge Management | 8 | 8 | 0 | 0 |
+| M6 Billing & Payment Management | 9 | 7 | 0 | 2 |
+| M7 Notification & Reminder Management | 8 | 6 | 0 | 2 |
+| M8 Report Management | 9 | 1 | 0 | 8 |
+| **Overall** | **72** | **53** | **0** | **19** |
 
-The full planned-matrix pass percentage is **76.2%**. Backend syntax checks and the frontend Vite production build passed. The browser run used Chrome and generated 11 screenshots. Exact commands, databases, defects, evidence, and limitations are recorded in [`TestingReport/TESTING_README.md`](TestingReport/TESTING_README.md).
+The full test-plan pass percentage is **73.6%** (53/72). Separately, the latest raw automated suites completed with 44/44 unit checks, 9/9 integration checks, and 15/15 browser-system scenarios passing. The browser run used Chrome and produced 14 genuine screenshots.
 
-This file maps test-plan identifiers to implemented workflows. It does not convert any unexecuted case into a pass. Use [`FINAL_VERIFICATION_CHECKLIST.md`](FINAL_VERIFICATION_CHECKLIST.md) for remaining manual checks.
+Backend `c8 --all` coverage records **24.98% line/statement coverage**, **76.77% branch coverage**, and **48.64% function coverage** across all files under `backend/src`. The line metric is intentionally conservative because HTTP integration tests launch the API as a child process; files exercised only in that child are retained as zero in the parent-process coverage report. Frontend line/branch coverage is not claimed because the project has no frontend unit-test instrumentation.
+
+Exact commands, databases, coverage output, defects, evidence, and limitations are recorded in [`TestingReport/TESTING_README.md`](TestingReport/TESTING_README.md). This file does not convert any unexecuted case into a pass. Use [`FINAL_VERIFICATION_CHECKLIST.md`](FINAL_VERIFICATION_CHECKLIST.md) for remaining manual checks.

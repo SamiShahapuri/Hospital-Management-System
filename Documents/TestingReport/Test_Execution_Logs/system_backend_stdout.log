@@ -1,0 +1,8 @@
+
+> hms-sprint1-backend@1.0.0 start
+> node src/server.js
+
+HMS API listening on http://localhost:5200
+Generated 1 appointment reminder(s).
+Generated 1 appointment reminder(s).
+Generated 1 appointment reminder(s).

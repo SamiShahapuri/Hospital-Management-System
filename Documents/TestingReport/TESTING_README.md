@@ -10,18 +10,20 @@ This directory contains the executed testing evidence and university-submission 
 - `Test_Cases.xlsx` - test register with Unit Tests, Integration Tests, System Tests, Defect Log, and Overall Summary sheets.
 - `Test_Execution_Logs/` - captured unit, integration, syntax, build, and browser-system outputs.
 - `Screenshots/` - genuine Playwright screenshots produced during the system run.
+- `Code_Coverage/` - detailed backend HTML coverage and machine-readable summary.
+- `CODE_COVERAGE.md` - code/branch coverage method, results, reproduction steps, and limitations.
 - `scripts/system-tests.mjs` - repeatable Playwright browser test script.
 
 ## Results
 
-| Testing type | Total | Passed | Failed | Blocked | Not executed |
-|---|---:|---:|---:|---:|---:|
-| Unit | 44 | 44 | 0 | 0 | 0 |
-| Integration | 8 | 8 | 0 | 0 | 0 |
-| System | 32 | 12 | 0 | 0 | 20 |
-| Overall | 84 | 64 | 0 | 0 | 20 |
+| Automated suite | Executed | Passed | Failed |
+|---|---:|---:|---:|
+| Unit | 44 | 44 | 0 |
+| Integration | 9 | 9 | 0 |
+| Browser system | 15 | 15 | 0 |
+| **Overall automated execution** | **68** | **68** | **0** |
 
-The executed-scope pass rate is 100% (64/64). The full planned-matrix pass percentage is 76.2% (64/84), because 20 requested manual/UI scenarios were not executed. The three tests reported as skipped by `npm test` are opt-in integration bootstrap files; they are excluded from the 44-test unit total and were executed by the dedicated integration command.
+The executed automated pass rate is 100% (68/68). The updated submitted test-plan matrix contains 72 cases: 53 PASS and 19 NOT EXECUTED, for a full-matrix pass percentage of 73.6%. A PASS is recorded only where executed unit, integration, or UI evidence verifies the expected behavior.
 
 ## Environment
 
@@ -31,6 +33,8 @@ The executed-scope pass rate is 100% (64/64). The full planned-matrix pass perce
 - React 18.3.1 / Vite 6.4.5; Express 4.21.2 / Mongoose 8.9.5
 - Integration database: `hms_testing_report_20261111`
 - System database: `hms_system_testing_20261111`
+- Final system rerun database: `hms_system_testing_20261117_rerun`
+- Coverage database: `hms_coverage_20261117`
 
 Neither test database is the normal development or production database.
 
@@ -112,7 +116,24 @@ The browser script uses the local-only default seed credentials printed by that 
 node Documents/TestingReport/scripts/system-tests.mjs
 ```
 
-The script expects Chrome at its standard Windows installation path. Its final execution produced 12 passes, 0 failures, 11 screenshots, and no uncaught page errors or invalid-pattern browser errors.
+The script expects Chrome at its standard Windows installation path. Its final execution produced 15 passes, 0 failures, 14 screenshots, and no uncaught page errors or invalid-pattern browser errors. The final run additionally verified ward/room/bed creation and bed-state changes, admission/treatment/discharge with bed release, and bill creation with partial payment and receipt rendering.
+
+### Backend code and branch coverage
+
+Install backend dependencies and configure the dedicated coverage database, then run:
+
+```powershell
+Set-Location backend
+$env:NODE_ENV = 'test'
+$env:JWT_SECRET = 'replace-with-a-test-only-secret'
+$env:MONGODB_URI = 'mongodb://127.0.0.1:27017/hms_coverage_20261117'
+$env:HMS_INTEGRATION_TESTS = '1'
+$env:HMS_M4_INTEGRATION_TESTS = '1'
+$env:HMS_M4_TEST_DATABASE_NAME = 'hms_coverage_20261117'
+npm.cmd run test:coverage
+```
+
+The executed `c8 --all` result is 24.98% lines/statements, 48.64% functions, and 76.77% branches. The full explanation and limitations are in `CODE_COVERAGE.md`.
 
 ## Defects resolved during testing
 
@@ -123,6 +144,6 @@ The script expects Chrome at its standard Windows installation path. Its final e
 
 ## Known limitations
 
-Twenty UI/manual scenarios remain marked NOT EXECUTED in the workbook and report. They include complete ward/room/bed UI CRUD, admission and discharge UI workflows, billing/payment UI mutation, receptionist appointment workflows, doctor consultation/clinical update workflows, patient appointment/profile mutation, browser print-dialog verification, simultaneous human-session contention, and a large 12-month production-volume benchmark.
+Nineteen cases in the submitted 72-case test plan remain NOT EXECUTED. They cover concurrent patient-record updates, duplicate-patient warning behavior, doctor filtering and history retention after deactivation, doctor schedule reflection, simultaneous appointment booking, full receipt-print verification, billing-report reconciliation, combined notification-center and recipient-routing checks, and most report-generation/export/performance scenarios.
 
-No claim is made for penetration-test certification, accessibility conformance, cross-browser coverage, disaster recovery, or production-scale load performance. The browser run used Chrome only. Expected console entries caused by intentionally rejected 401/404 requests and network-blocked external resources were retained in the JSON evidence; the final run had no uncaught page error.
+No claim is made for penetration-test certification, accessibility conformance, cross-browser coverage, disaster recovery, production-scale load performance, or frontend line/branch coverage. The browser run used Chrome only. Expected console entries caused by intentionally rejected 401/404 requests and network-blocked external resources were retained in the JSON evidence; the final run had no uncaught page error.

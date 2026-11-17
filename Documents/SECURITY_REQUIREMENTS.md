@@ -49,7 +49,7 @@ The security baseline considers:
 | SEC-AUTH-02 | Login shall accept only a valid username or email and password combination. | Implemented. | Unit and browser invalid-login tests. |
 | SEC-AUTH-03 | Repeated failed login attempts shall cause temporary account lockout. | Implemented at five failures. | Unit and manual verification checklist. |
 | SEC-AUTH-04 | Patient account activation shall require a matching existing Patient ID, name, and registered email. | Implemented. | Unit and integration tests. |
-| SEC-AUTH-05 | Doctor accounts shall be linked to Doctor profiles created through an authorized staff workflow. | Implemented. | Integration and manual workflow tests. |
+| SEC-AUTH-05 | Doctor accounts shall be linked to Doctor profiles created through an authorized staff workflow. | Implemented. | Named integration test `SEC-AUTH-05`, unit/source-wiring test, and automated system test `ST-ADMIN-DOCTOR-01`. |
 | SEC-AUTH-06 | Production startup shall require an explicitly supplied JWT secret. | Implemented. | Configuration/source verification. |
 | SEC-AUTH-07 | Password recovery and email ownership verification shall use a secure out-of-band process. | Not implemented. | Future production requirement. |
 
