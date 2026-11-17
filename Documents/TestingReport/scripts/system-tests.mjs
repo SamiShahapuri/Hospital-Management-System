@@ -16,6 +16,10 @@ const browserErrors = [];
 const pageErrors = [];
 let adminToken = "";
 let guestBooking = null;
+let systemPatientName = "";
+let systemPatientId = "";
+let systemRoomNumber = "";
+let systemBedId = "";
 
 function record(id, description, status, actual, evidence = "") {
   results.push({ id, description, status, actual, evidence });
@@ -130,12 +134,112 @@ await run("ST-ADMIN-PATIENT-01", "Admin registers and updates a patient", async 
   await page.getByRole("button", { name: "Register patient" }).click();
   const row = page.locator("tbody tr").filter({ hasText: patientName });
   await row.waitFor();
+  systemPatientName = patientName;
+  systemPatientId = await row.locator("td").first().textContent();
   await row.getByRole("button", { name: /View \/ edit/ }).click();
   await page.getByRole("button", { name: "Edit contact details" }).click();
   await page.getByLabel("Phone").last().fill(`986${suffix}`);
   await page.getByRole("button", { name: "Save patient details" }).click();
   await page.getByText(`986${suffix}`).first().waitFor();
   return { actual: "Patient registration produced a Patient ID and the updated phone persisted.", evidence: await screenshot(page, "05-patient-created-and-updated.png") };
+});
+
+await run("ST-ADMIN-FACILITY-01", "Admin creates a ward and room and manages generated bed states", async () => {
+  const suffix = Date.now().toString().slice(-6);
+  const wardName = `System Ward ${suffix}`;
+  systemRoomNumber = `SYS-${suffix}`;
+  await page.goto(`${baseUrl}/admin/wards`);
+  await page.getByLabel("Ward name").fill(wardName);
+  await page.getByLabel("Department").selectOption({ label: "General Medicine" });
+  await page.getByLabel("Ward type").selectOption("General");
+  await page.getByLabel("Capacity (beds)").fill("4");
+  await page.getByRole("button", { name: "Create ward" }).click();
+  await page.locator("article.facility-card").filter({ hasText: wardName }).waitFor();
+
+  await page.goto(`${baseUrl}/admin/rooms`);
+  const wardOption = page.getByLabel("Ward").locator("option").filter({ hasText: wardName });
+  await page.getByLabel("Ward").selectOption(await wardOption.getAttribute("value"));
+  await page.getByLabel("Room number").fill(systemRoomNumber);
+  await page.getByLabel("Number of beds").fill("2");
+  await page.getByLabel("Daily room rate").fill("1500");
+  await page.getByRole("button", { name: "Create room + beds" }).click();
+  await page.locator("tbody tr").filter({ hasText: systemRoomNumber }).waitFor();
+
+  await page.goto(`${baseUrl}/admin/beds`);
+  const firstBed = page.locator("article.bed-tile").filter({ hasText: systemRoomNumber }).first();
+  await firstBed.waitFor();
+  const bedNumber = (await firstBed.locator("strong").textContent()).trim();
+  await firstBed.getByLabel(`Change status for ${bedNumber}`).selectOption("Cleaning");
+  await firstBed.getByText("Cleaning", { exact: true }).waitFor();
+  await firstBed.getByLabel(`Change status for ${bedNumber}`).selectOption("Available");
+  await firstBed.getByText("Available", { exact: true }).waitFor();
+
+  const bedsResponse = await page.request.get(`${apiUrl}/facility/beds`, { headers: { Authorization: `Bearer ${adminToken}` } });
+  const beds = await bedsResponse.json();
+  const createdBed = beds.find(bed => bed.room?.roomNumber === systemRoomNumber && bed.status === "Available");
+  if (!createdBed) throw new Error("Generated bed records were not persisted for the new room");
+  systemBedId = createdBed._id;
+  return { actual: "Ward and room persisted, two bed records were generated, and a bed completed Cleaning to Available state changes.", evidence: await screenshot(page, "12-facility-ward-room-bed.png") };
+});
+
+await run("ST-ADMIN-ADMISSION-01", "Admin admits, treats, and discharges a patient with bed release", async () => {
+  if (!systemPatientName || !systemBedId) throw new Error("Patient and facility prerequisites did not complete");
+  await page.goto(`${baseUrl}/admin/admissions`);
+  const patientOption = page.getByLabel("Patient").locator("option").filter({ hasText: systemPatientName });
+  await page.getByLabel("Patient").selectOption(await patientOption.getAttribute("value"));
+  const bedOption = page.getByLabel("Tracked available bed").locator(`option[value="${systemBedId}"]`);
+  if (!(await bedOption.count())) throw new Error("Created bed was not offered for admission");
+  await page.getByLabel("Tracked available bed").selectOption(systemBedId);
+  await page.getByRole("button", { name: "Admit patient" }).click();
+  const row = page.locator("tbody tr").filter({ hasText: systemPatientName }).first();
+  await row.filter({ hasText: "Admitted" }).waitFor();
+
+  await row.getByRole("button", { name: "Add treatment" }).click();
+  await page.getByLabel("Treatment or procedure").fill("System test observation");
+  await page.getByLabel("Details").fill("Synthetic treatment entry recorded through the admission UI.");
+  await page.getByRole("button", { name: "Save treatment" }).click();
+  await row.locator("td").nth(4).filter({ hasText: "1" }).waitFor();
+
+  await row.getByRole("button", { name: "Discharge" }).click();
+  await page.getByLabel("Discharge summary").fill("Stable condition; discharged after the synthetic system-test observation.");
+  await page.getByRole("button", { name: "Confirm discharge" }).click();
+  await row.filter({ hasText: "Discharged" }).waitFor();
+
+  const bedsResponse = await page.request.get(`${apiUrl}/facility/beds`, { headers: { Authorization: `Bearer ${adminToken}` } });
+  const beds = await bedsResponse.json();
+  if (beds.find(bed => bed._id === systemBedId)?.status !== "Available") throw new Error("Discharge did not release the allocated bed");
+  return { actual: "Admission, treatment entry, required discharge summary, automatic bed release, and discharge persistence were verified.", evidence: await screenshot(page, "13-admission-treatment-discharge.png") };
+});
+
+await run("ST-ADMIN-BILLING-01", "Admin creates an invoice, records payment, and opens the receipt", async () => {
+  if (!systemPatientName) throw new Error("Patient prerequisite did not complete");
+  await page.goto(`${baseUrl}/admin/billing`);
+  const patientOption = page.getByLabel("Patient").locator("option").filter({ hasText: systemPatientName });
+  await page.getByLabel("Patient").selectOption(await patientOption.getAttribute("value"));
+  await page.getByLabel("Item 1").fill("System consultation");
+  await page.getByLabel("Quantity").first().fill("1");
+  await page.getByLabel(/Unit price/).first().fill("800");
+  await page.getByRole("button", { name: "Add another item" }).click();
+  await page.getByLabel("Item 2").fill("System laboratory charge");
+  await page.getByLabel("Quantity").nth(1).fill("2");
+  await page.getByLabel(/Unit price/).nth(1).fill("100");
+  await page.getByRole("button", { name: "Create invoice" }).click();
+  const invoiceRow = page.locator("tbody tr").filter({ hasText: systemPatientName }).filter({ hasText: "1,000" }).first();
+  await invoiceRow.waitFor();
+  await invoiceRow.getByRole("button", { name: "Record payment" }).click();
+  await page.getByLabel(/Payment amount/).fill("400");
+  await page.getByLabel("Payment method").selectOption("UPI");
+  await page.getByRole("button", { name: "Save payment" }).click();
+  await invoiceRow.filter({ hasText: "Partially Paid" }).waitFor();
+
+  const popupPromise = context.waitForEvent("page");
+  await invoiceRow.getByRole("button", { name: "Print receipt" }).click();
+  const receiptPage = await popupPromise;
+  await receiptPage.waitForLoadState("domcontentloaded");
+  await receiptPage.getByText("Payment receipt").waitFor();
+  const receiptEvidence = await screenshot(receiptPage, "14-payment-receipt.png");
+  await receiptPage.close();
+  return { actual: "A two-line ₹1,000 invoice persisted, a ₹400 UPI payment produced Partially Paid with ₹600 due, and the receipt page opened.", evidence: receiptEvidence };
 });
 
 await run("ST-ADMIN-REPORTS-01", "Admin reports page loads current persisted data", async () => {

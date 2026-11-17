@@ -1,8 +1,5 @@
 # Hospital Management System Software Architecture and Design
 
-**Version:** 1.0  
-**Status:** As-built baseline  
-**Date:** 17 November 2026  
 **Project:** Software Engineering Mini-Project
 
 ## 1. Purpose

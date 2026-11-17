@@ -1,8 +1,5 @@
 # Hospital Management System Security Requirements
 
-**Version:** 1.0  
-**Status:** As-built security baseline  
-**Date:** 17 November 2026  
 **Project:** Software Engineering Mini-Project
 
 ## 1. Purpose and scope

@@ -19,8 +19,6 @@ This project was developed as part of the **Software Engineering Mini-Project** 
 
 The full planned test matrix is **64 passed out of 84 cases (76.2%)**. A test is counted as passed only when execution evidence exists. See the [testing evidence](Documents/TestingReport/TESTING_README.md) for the exact results and limitations.
 
-Remaining work is tracked in GitHub issues [#64](https://github.com/SamiShahapuri/Hospital-Management-System/issues/64) through [#69](https://github.com/SamiShahapuri/Hospital-Management-System/issues/69), covering pending system tests, frontend automation, security hardening, deployment and recovery, non-functional validation, and final release preparation.
-
 ---
 
 ## 👥 Team Members
