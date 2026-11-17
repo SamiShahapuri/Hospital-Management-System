@@ -57,13 +57,13 @@ Set-Location backend
 $env:NODE_ENV = 'test'
 $env:JWT_SECRET = 'replace-with-a-test-only-secret'
 $env:MONGODB_URI = 'mongodb://127.0.0.1:27017/hms_testing_report_20261111'
-$env:RUN_INTEGRATION_TESTS = '1'
-$env:RUN_M4_INTEGRATION_TESTS = '1'
-$env:RUN_REMINDER_INTEGRATION_TESTS = '1'
+$env:HMS_INTEGRATION_TESTS = '1'
+$env:HMS_M4_INTEGRATION_TESTS = '1'
+$env:HMS_M4_TEST_DATABASE_NAME = 'hms_testing_report_20261111'
 npm.cmd run test:integration
 ```
 
-Expected final result: 8 passed and 0 failed. The tests create and verify persisted records, then clean their own isolated data.
+`HMS_INTEGRATION_TESTS` enables both the general API and reminder suites. `HMS_M4_INTEGRATION_TESTS` enables the appointment M4 suite, which additionally verifies that the configured database name matches `HMS_M4_TEST_DATABASE_NAME`. Expected final result: 8 passed and 0 failed. The tests create and verify persisted records, then clean their own isolated data.
 
 ### Backend syntax and frontend production build
 

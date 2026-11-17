@@ -54,7 +54,10 @@ jobs:
         working-directory: backend
         env:
           HMS_INTEGRATION_TESTS: "1"
+          HMS_M4_INTEGRATION_TESTS: "1"
+          HMS_M4_TEST_DATABASE_NAME: "hms_ci_test"
           HMS_TEST_PORT: "5100"
+          HMS_M4_TEST_PORT: "5113"
         run: npm run test:integration
 
   frontend-build:

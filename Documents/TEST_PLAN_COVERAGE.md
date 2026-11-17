@@ -137,15 +137,19 @@ The seeded demo contains six illustrated departments only: Cardiology (heart), N
 | `ST_M8_01` | Admission report aggregates admission/discharge data and links to the bed/room workflow. |
 | `ST_M8_02` | Date filters accept a 12-month range; response-time performance on a production-sized dataset still needs benchmarking. |
 
-## Automated checks run in this workspace
+## Executed test status
 
-The supplied sample login aliases are `admin01` / `Admin@123`, `drsmith` / `Doctor@123`, and `reception01` / `Recep@123`. During patient account activation, choose `patient01` and set `Pat@1234` (or choose another username/password); the activation is rejected unless the patient already exists in hospital records.
+The supplied sample login aliases are `admin01` / `Admin@123`, `drsmith` / `Doctor@123`, `reception01` / `Recep@123`, and `patient01` / `Pat@1234`. Patient activation is rejected unless the supplied identity matches an existing hospital record.
 
-Last recorded command:
+The final recorded assessment on 11 November 2026 produced:
 
-```bash
-cd backend
-node --test test/*.test.js
-```
+| Testing type | Total | Passed | Failed | Blocked | Not executed |
+|---|---:|---:|---:|---:|---:|
+| Unit | 44 | 44 | 0 | 0 | 0 |
+| Integration | 8 | 8 | 0 | 0 | 0 |
+| System | 32 | 12 | 0 | 0 | 20 |
+| Overall | 84 | 64 | 0 | 0 | 20 |
 
-Result: **36 passed, 0 failed, 1 skipped** (37 total). The skipped test is the opt-in MongoDB-backed integration test. A separate static source check parsed all 32 frontend JS/JSX files and verified local imports; every backend JavaScript file passed `node --check`. The frontend Vite production build and browser-based manual tests were not executed in this offline environment. Run the steps in `FINAL_VERIFICATION_CHECKLIST.md` before marking the corresponding PDF `Test Result` cells as Pass.
+The full planned-matrix pass percentage is **76.2%**. Backend syntax checks and the frontend Vite production build passed. The browser run used Chrome and generated 11 screenshots. Exact commands, databases, defects, evidence, and limitations are recorded in [`TestingReport/TESTING_README.md`](TestingReport/TESTING_README.md).
+
+This file maps test-plan identifiers to implemented workflows. It does not convert any unexecuted case into a pass. Use [`FINAL_VERIFICATION_CHECKLIST.md`](FINAL_VERIFICATION_CHECKLIST.md) for remaining manual checks.

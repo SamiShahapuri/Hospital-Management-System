@@ -16,18 +16,24 @@ This is a refactor of the existing Hospital Management System repository, not a 
 - Lab-test scheduling, status/result updates, reminders, and date-range reports.
 - Role-scoped in-app reminders for appointments, lab tests and due bills; admin reports with date filters and CSV export; dashboard charts/visual summaries.
 
-## Verification performed in this container
+## Verification status
 
-- Backend automated test run: **36 passed, 0 failed, 1 skipped** (37 total). The skipped test is the MongoDB-backed end-to-end integration suite; it requires `HMS_INTEGRATION_TESTS=1` and a separate test database. Its generated patient username is unique per run so repeated integration runs do not collide.
-- The passing tests include source/contract checks and utility/profile validation tests. They are not a substitute for executing all 72 manual test-plan cases against a live database and browser.
-- Server-side logout revocation was added using a token-version check.
-- Final static validation: all 32 frontend JS/JSX files parsed and all local imports resolved; all backend JavaScript files passed `node --check`.
-- The frontend Vite production build could not be run in this environment because dependencies are not present and access to the npm package registry previously failed with a DNS/network error. Re-run `npm install` and `npm run build` from `frontend/` in a network-enabled environment.
-- Manual browser checks, accessibility/responsive checks, MongoDB integration tests and real print-dialog behaviour remain to be verified on the target machine.
+The final recorded assessment was executed on 11 November 2026 using isolated test databases. The authoritative evidence is in [`Documents/TestingReport/`](Documents/TestingReport/).
+
+- Unit testing: **44 passed, 0 failed**.
+- MongoDB-backed integration testing: **8 passed, 0 failed**.
+- Browser system testing: **12 passed, 0 failed, 20 not executed** from the 32-case system matrix.
+- Overall planned matrix: **64 passed, 0 failed, 20 not executed** from 84 cases, or **76.2% passed**.
+- Backend JavaScript syntax checks passed.
+- The frontend Vite production build completed successfully and transformed 61 modules.
+- The final Playwright run produced 11 genuine screenshots and no uncaught page errors.
+- Four defects were corrected and covered by regression evidence: patient billing-scope authorization, dashboard component exports/imports, invalid HTML patterns, and a duplicate Admission index declaration.
+
+The executed-scope pass rate is 100% because all 64 executed cases passed. This does not mean the entire project passed the testing assessment: 20 UI/manual scenarios remain not executed, including complete facility, admission, discharge, billing, receptionist, doctor, patient, print-dialog, human-concurrency, and production-volume checks.
 
 ## Test-plan coverage
 
-See [`Documents/TEST_PLAN_COVERAGE.md`](Documents/TEST_PLAN_COVERAGE.md) for the case-by-case implementation mapping. The mapping distinguishes implemented code paths from tests actually executed; do not report an implementation mapping as a passed test result.
+See [`Documents/TEST_PLAN_COVERAGE.md`](Documents/TEST_PLAN_COVERAGE.md) for the case-by-case implementation mapping and [`Documents/TestingReport/TESTING_README.md`](Documents/TestingReport/TESTING_README.md) for actual execution commands and results. The mapping distinguishes implemented code paths from tests actually executed; do not report an implementation mapping as a passed test result.
 
 ## Local run
 
@@ -38,3 +44,9 @@ See [`Documents/TEST_PLAN_COVERAGE.md`](Documents/TEST_PLAN_COVERAGE.md) for the
 5. For patient login, first register the person from Patient Records as Admin/Receptionist. Share the generated Patient ID; the patient activates using the same full name and registered email, then sets a password.
 
 Use synthetic demo data only. This academic project is not a production-ready clinical system.
+
+## Documentation baseline
+
+- [`Documents/SOFTWARE_ARCHITECTURE_DESIGN.md`](Documents/SOFTWARE_ARCHITECTURE_DESIGN.md) records the as-built architecture and design.
+- [`Documents/SECURITY_REQUIREMENTS.md`](Documents/SECURITY_REQUIREMENTS.md) records security requirements, current control status, and the role-permission matrix.
+- [`Documents/FINAL_VERIFICATION_CHECKLIST.md`](Documents/FINAL_VERIFICATION_CHECKLIST.md) contains the remaining manual checks.

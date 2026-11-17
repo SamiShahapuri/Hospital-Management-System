@@ -75,7 +75,8 @@ Use a local demo database only. Do not enter real patient or clinical data. Reco
 - The facility hierarchy is configured by Admin: Department → Ward → Room → Bed. Room creation generates the configured individual beds; it does not import an existing hospital inventory.
 - Guest bookings create a patient record and appointment without creating a patient login account. The guest receives an on-screen confirmation; there is no email/SMS confirmation.
 - The MongoDB-backed integration workflow is opt-in and must use a dedicated test database. Manual browser usability, accessibility and responsive-layout checks are still required; a passing API suite/build does not replace them.
-- The repository snapshot does not include the originally submitted SAD. Add it or record its separate location before the final hand-in.
+- The as-built architecture is documented in `SOFTWARE_ARCHITECTURE_DESIGN.md`, and the security baseline is documented in `SECURITY_REQUIREMENTS.md`.
+- The project remains an academic demonstration. Production deployment, regulatory certification, disaster recovery, and production-scale performance are not claimed.
 
 ## Updated doctor, patient, and guest pages
 

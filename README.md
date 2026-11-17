@@ -6,6 +6,23 @@ This project was developed as part of the **Software Engineering Mini-Project** 
 
 ---
 
+## Project Status
+
+| Workstream | Status | Evidence or remaining work |
+|---|---|---|
+| Functional implementation | Complete for the submitted mini-project scope | Admin, Receptionist, Doctor, Patient, and Guest workflows are implemented. |
+| Unit testing | Complete | 44 passed, 0 failed. |
+| Integration testing | Complete for the current automated suite | 8 passed, 0 failed against a dedicated MongoDB test database. |
+| System testing | In progress | 12 passed and 20 remain not executed. |
+| Documentation baseline | Complete | SRS, architecture and design, security requirements, test plan, use cases, coverage mapping, and testing report are present. |
+| Production readiness | Not claimed | Production deployment, security certification, backup and recovery, monitoring, and production-scale load testing remain outside the verified baseline. |
+
+The full planned test matrix is **64 passed out of 84 cases (76.2%)**. A test is counted as passed only when execution evidence exists. See the [testing evidence](Documents/TestingReport/TESTING_README.md) for the exact results and limitations.
+
+Remaining work is tracked in GitHub issues [#64](https://github.com/SamiShahapuri/Hospital-Management-System/issues/64) through [#69](https://github.com/SamiShahapuri/Hospital-Management-System/issues/69), covering pending system tests, frontend automation, security hardening, deployment and recovery, non-functional validation, and final release preparation.
+
+---
+
 ## 👥 Team Members
 
 | Name | SRN | GitHub |
@@ -247,11 +264,16 @@ Hospital-Management-System/
 │
 ├── Documents/
 │   ├── SRSdocument.pdf
+│   ├── SOFTWARE_ARCHITECTURE_DESIGN.md
+│   ├── Software_Architecture_and_Design.pdf
+│   ├── SECURITY_REQUIREMENTS.md
+│   ├── Security_Requirements.pdf
 │   ├── testPlanDocument.pdf
 │   ├── useCaseDiagram.jpeg
 │   ├── useCaseFlowDocumentation.pdf
 │   ├── TEST_PLAN_COVERAGE.md
-│   └── FINAL_VERIFICATION_CHECKLIST.md
+│   ├── FINAL_VERIFICATION_CHECKLIST.md
+│   └── TestingReport/
 │
 ├── backend/
 │   ├── src/
@@ -272,7 +294,8 @@ Hospital-Management-System/
 │   └── package.json
 │
 ├── VideoDemo/
-│   └── login.mp4
+│   ├── sprint 1/
+│   └── sprint 2/
 │
 └── README.md
 ```
@@ -293,12 +316,16 @@ For integration testing, configure a separate MongoDB test database and enable t
 ```powershell
 $env:MONGODB_URI='mongodb://127.0.0.1:27017/hms_integration_test'
 $env:HMS_INTEGRATION_TESTS='1'
+$env:HMS_M4_INTEGRATION_TESTS='1'
+$env:HMS_M4_TEST_DATABASE_NAME='hms_integration_test'
 npm run test:integration
 ```
 
-The project also uses GitHub Actions to automate backend checks, syntax validation and frontend builds.
+The reminder suite also uses `HMS_INTEGRATION_TESTS`. The M4 appointment-concurrency suite requires `HMS_M4_INTEGRATION_TESTS=1` and refuses to run unless `HMS_M4_TEST_DATABASE_NAME` matches the database in `MONGODB_URI`.
 
-Refer to `Documents/TEST_PLAN_COVERAGE.md` for the test case implementation mapping.
+The project also uses GitHub Actions to automate backend checks, syntax validation, MongoDB-backed integration tests, and frontend builds.
+
+Refer to [TEST_PLAN_COVERAGE.md](Documents/TEST_PLAN_COVERAGE.md) for implementation mapping and [TESTING_README.md](Documents/TestingReport/TESTING_README.md) for executed results. An implementation mapping is not evidence that a test passed.
 
 ---
 
@@ -306,12 +333,25 @@ Refer to `Documents/TEST_PLAN_COVERAGE.md` for the test case implementation mapp
 
 | Document | Description |
 |---|---|
-| SRS | Software Requirements Specification |
-| SAD | System Architecture Document |
-| Test Plan | Software testing scenarios and test cases |
-| Use Case Diagram | Actors and system interactions |
-| Use Case Flow | Step-by-step use case descriptions |
-| Test Coverage | Mapping of test cases to implementation |
+| [SRS](Documents/SRSdocument.pdf) | Software Requirements Specification |
+| [Architecture and Design](Documents/SOFTWARE_ARCHITECTURE_DESIGN.md) ([PDF](Documents/Software_Architecture_and_Design.pdf)) | As-built components, data relationships, APIs, workflows, and architecture decisions |
+| [Security Requirements](Documents/SECURITY_REQUIREMENTS.md) ([PDF](Documents/Security_Requirements.pdf)) | Security objectives, role matrix, control status, and verification mapping |
+| [Test Plan](Documents/testPlanDocument.pdf) | Software testing scenarios and test cases |
+| [Use Case Diagram](Documents/useCaseDiagram.jpeg) | Actors and system interactions |
+| [Use Case Flow](Documents/useCaseFlowDocumentation.pdf) | Step-by-step use case descriptions |
+| [Test Coverage](Documents/TEST_PLAN_COVERAGE.md) | Mapping of test cases to implementation |
+| [Testing Report](Documents/TestingReport/Software_Testing_Report.pdf) | Executed results, evidence, defects, traceability, and limitations |
+
+---
+
+## Demo Videos
+
+| Sprint | Demonstrated workflows |
+|---|---|
+| [Sprint 1](VideoDemo/sprint%201/) | Login, patient management, doctor creation, and appointment management |
+| [Sprint 2](VideoDemo/sprint%202/) | Department, ward, room, bed, admission, billing, appointment, laboratory, and reporting workflows |
+
+The video files demonstrate selected workflows only. The executed test logs and screenshots in `Documents/TestingReport` remain the authoritative test evidence.
 
 ---
 
